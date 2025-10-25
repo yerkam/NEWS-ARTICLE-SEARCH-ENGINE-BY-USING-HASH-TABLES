@@ -2,10 +2,10 @@ import java.io.IOException;
 import java.util.*;
 public class Main {
     public static void main(String[] args) {
-        ExcelReader reader = new ExcelReader();
+        /*ExcelReader reader = new ExcelReader();
         try {
             String filePath = "CNN_Articels.csv";
-            List<String> article = reader.findArticleWithID(filePath, "WN0M7728E6");
+            List<String> article = reader.findArticleWithID(filePath, "x");
             if (article != null) {
                 System.out.println("Article found: " + String.join(", ", article));
             } else {
@@ -13,7 +13,17 @@ public class Main {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } */
+
+        ExcelReader reader = new ExcelReader();
+        try {
+            reader.loadArticles("CNN_Articels.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
+        List<String> article = reader.findArticleWithID("x");  // Hızlı arama yap
+        System.out.println(article);
+        
     }// end main
 }// end class 
 

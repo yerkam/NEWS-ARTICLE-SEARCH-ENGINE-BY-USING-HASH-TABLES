@@ -51,42 +51,24 @@ public class ExcelReader {
                                                     "‽" +        // interrobang
                                                     "※" +          // reference mark
                                                     "]";
-
-    public List<String> findArticleWithID(String fileLocation, String ID) throws IOException {
     
-        long startTime = System.nanoTime();
-        int rowCount = 0;
+    private HashMap<String, List<String>> articleCache = new HashMap<>(); // Will be used own hash table implementation later
+    public void loadArticles(String fileLocation) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
-            reader.readLine(); // Header satırını atla
+            reader.readLine(); // Skip header line
             
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length > 0)
-                {   rowCount++;
-                    if(parts[0].equals(ID)){
-                        // Timer and statistics
-                        long endTime = System.nanoTime();
-                        long duration = (endTime - startTime) / 1_000_000;
-                        double seconds = duration / 1000.0;
-                        System.out.println("Toplam satır: " + rowCount);
-                        System.out.println("Süre: " + duration + " ms (" + seconds + " saniye)");
-                        System.out.println("Saniyede okunan satır: " + (rowCount / seconds));
-                        return new ArrayList<>(Arrays.asList(parts));
-                    }
+                if (parts.length > 0) {
+                    articleCache.put(parts[0], new ArrayList<>(Arrays.asList(parts)));
                 }
-            
             }
         }
+    }
 
-        // Timer and statistics
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime) / 1_000_000;
-        double seconds = duration / 1000.0;
-        System.out.println("Toplam satır: " + rowCount);
-        System.out.println("Süre: " + duration + " ms (" + seconds + " saniye)");
-        System.out.println("Saniyede okunan satır: " + (rowCount / seconds));
-
-        return null;
+    public List<String> findArticleWithID(String ID) {
+        List<String> result = articleCache.get(ID);
+        return result;
     }
 }
