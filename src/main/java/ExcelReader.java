@@ -56,30 +56,37 @@ public class ExcelReader {
     
         long startTime = System.nanoTime();
         int rowCount = 0;
-
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
-        String line;
-        reader.readLine(); // Header satırını atla
-        
-        while ((line = reader.readLine()) != null) {
-            if (line.trim().isEmpty()) continue;
-            rowCount++;
-            String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"); // CSV format için özel split
-            if (parts.length > 0 && parts[0].equals(ID)) {
-                return new ArrayList<>(Arrays.asList(parts));
-            }
-            System.out.println("Checked ID: " + parts[0]);
+            String line;
+            reader.readLine(); // Header satırını atla
             
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length > 0)
+                {   rowCount++;
+                    if(parts[0].equals(ID)){
+                        // Timer and statistics
+                        long endTime = System.nanoTime();
+                        long duration = (endTime - startTime) / 1_000_000;
+                        double seconds = duration / 1000.0;
+                        System.out.println("Toplam satır: " + rowCount);
+                        System.out.println("Süre: " + duration + " ms (" + seconds + " saniye)");
+                        System.out.println("Saniyede okunan satır: " + (rowCount / seconds));
+                        return new ArrayList<>(Arrays.asList(parts));
+                    }
+                }
+            
+            }
         }
-    }
 
-    long endTime = System.nanoTime();
-    long duration = (endTime - startTime) / 1_000_000; // milliseconds
-    double seconds = duration / 1000.0;
-    System.out.println("Toplam satır: " + rowCount);
-    System.out.println("Süre: " + duration + " ms (" + seconds + " saniye)");
-    System.out.println("Saniyede okunan satır: " + (rowCount / seconds));
+        // Timer and statistics
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime) / 1_000_000;
+        double seconds = duration / 1000.0;
+        System.out.println("Toplam satır: " + rowCount);
+        System.out.println("Süre: " + duration + " ms (" + seconds + " saniye)");
+        System.out.println("Saniyede okunan satır: " + (rowCount / seconds));
 
-    return null;
+        return null;
     }
 }
