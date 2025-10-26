@@ -17,12 +17,13 @@ public class Main {
 
         ExcelReader reader = new ExcelReader();
         try {
-            reader.loadArticles("CNN_Articels.csv");
+            reader.loadArticles("CNN_Articels.csv", 0.05);
         } catch (IOException e) {
             e.printStackTrace();
         } 
         List<String> article = reader.findArticleWithID("x");  // Hızlı arama yap
         System.out.println(article);
+        System.out.println(reader.articleCache);
         
     }// end main
 }// end class 
