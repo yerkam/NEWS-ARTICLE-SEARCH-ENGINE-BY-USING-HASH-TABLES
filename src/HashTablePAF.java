@@ -1,5 +1,6 @@
 public class HashTablePAF implements HashTableInterface<String, Object> {
   private int hashSize = 10007; // Asal sayı boyutu
+  private static final int Z = 33;
   HashEntry[] table;
 
   public HashTablePAF() {
@@ -11,7 +12,7 @@ public class HashTablePAF implements HashTableInterface<String, Object> {
   @Override
   public Object get(String key) {
         int hash = hashFunction(key);
-        System.out.println("Hash value: " + hash);
+       // System.out.println("Hash value: " + hash);
         if (table[hash] == null)
             return null;
         else
@@ -22,7 +23,7 @@ public class HashTablePAF implements HashTableInterface<String, Object> {
   public void put(String key, Object value) {
 
     int hash = hashFunction(key);
-    System.out.println("Hash value: " + hash);
+    // System.out.println("Hash value: " + hash);
     if (table[hash] != null) {
       System.out.println("There is a collision for key: " + key);
       return;
@@ -75,7 +76,48 @@ public class HashTablePAF implements HashTableInterface<String, Object> {
 
   @Override
   public int hashFunction(String key) {
-     return Math.abs(key.hashCode()) % hashSize;
+     // return Math.abs(key.hashCode()) % hashSize;
+     // PAF (Polynomial Accumulation Function) implementasyonu
+    // Horner's rule kullanarak overflow'u önleme
+    // h(s) = ch0*z^(n-1) + ch1*z^(n-2) + ... + ch(n-1)*z^0
+    
+    if (key == null || key.isEmpty()) {
+      return 0;
+    }
+    
+    key = key.toLowerCase(); // Case insensitive
+    int hash = 0;
+    
+    // Horner's rule: her adımda modulus al
+    for (int i = 0; i < key.length(); i++) {
+      char c = key.charAt(i);
+      int charValue = getCharValue(c);
+      
+      // Horner's rule: hash = (hash * Z + charValue) % hashSize
+      hash = (hash * Z + charValue) % hashSize;
+      
+      // Negatif değerleri önle
+      if (hash < 0) {
+        hash = (hash + hashSize) % hashSize;
+      }
+    }
+    
+    return hash;
+  }
+  
+  /**
+   * Karakteri 1-26 arasında sayıya çevirir (a=1, b=2, ..., z=26)
+   * Harf değilse ASCII değerini kullanır
+   */
+  private int getCharValue(char c) {
+    if (c >= 'a' && c <= 'z') {
+      return c - 'a' + 1; // a=1, b=2, ..., z=26
+    } else if (c >= 'A' && c <= 'Z') {
+      return c - 'A' + 1; // A=1, B=2, ..., Z=26
+    } else {
+      // Harf değilse ASCII değerini kullan
+      return (int) c;
+    }
   }
 
   @Override

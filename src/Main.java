@@ -17,7 +17,7 @@ public class Main {
 
         ExcelReader reader = new ExcelReader();
         try {
-            reader.loadArticles("CNN_Articels.csv", 0.05);
+            reader.loadArticles("CNN_Articels.csv", 1);
         } catch (IOException e) {
             e.printStackTrace();
         } 
