@@ -6,7 +6,7 @@ public class debugmain {
         
         // Hash table oluştur
         //HashTablePAF hashTable = new HashTablePAF();
-        HashTableSSF hashTable = new HashTableSSF();
+        HashTableSSF hashTable = new HashTableSSF(false);
         
         // Test 1: Temel put ve get işlemleri
         System.out.println("TEST 1: Temel Put ve Get İşlemleri");

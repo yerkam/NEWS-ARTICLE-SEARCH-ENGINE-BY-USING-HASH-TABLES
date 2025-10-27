@@ -1,12 +1,14 @@
-public class HashTableSSF implements HashTableInterface<String, Object> {
+public class HashTableSSF extends Collision implements HashTableInterface<String, Object>{
 	
     private int hashSize = 10007; // Asal sayı boyutu
     HashEntry[] table;
+    boolean collision;
 
-    public HashTableSSF() {
+    public HashTableSSF(boolean collisionChoice) {
           table = new HashEntry[hashSize];
           for (int i = 0; i < hashSize; i++)
                 table[i] = null;
+          this.collision = collisionChoice; // false -> LP, true -> DH
     }
 
     @Override
@@ -23,20 +25,18 @@ public class HashTableSSF implements HashTableInterface<String, Object> {
     public void put(String key, Object value) {
       int index = hashFunction(key);
       if (table[index] != null) {
-                  int temp = 0;
-                  char[] charArray = key.toCharArray();
-                  for (char c : charArray) {
-                      temp += (int) c;
-                  }
-        System.out.println("Collision detected for key: " + key + " at index: " + index + " (Hash: " + (temp % hashSize) + ")");    
-        return;
+        if(collision) {
+          index = linearProbing(key, index, hashSize, table);
+        } else{
+          index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
+        }
       }
       table[index] = new HashEntry(key, value);
       System.out.println("Inserted key: " + key + " at index: " + index);
     }
 
     @Override
-    public int size() {
+    public int size() { 
       int count = 0;
       for (HashEntry entry : table) {
           if (entry != null) {
@@ -109,6 +109,14 @@ public class HashTableSSF implements HashTableInterface<String, Object> {
         }
         return n;
     }
+
+    private int getPreviousPrime(int n) {
+        n--;
+        while (n > 1 && !isPrime(n)) {
+            n--;
+        }
+        return n;
+    }
     
     private boolean isPrime(int n) {
         if (n <= 1) return false;
@@ -122,5 +130,5 @@ public class HashTableSSF implements HashTableInterface<String, Object> {
         return true;
     }
 
-     
+    
 }
