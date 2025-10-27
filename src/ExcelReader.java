@@ -58,7 +58,7 @@ public class ExcelReader {
         
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
-            reader.readLine(); // Ilk satırı atla (başlıklar)
+            reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
                 allLines.add(line);
             }

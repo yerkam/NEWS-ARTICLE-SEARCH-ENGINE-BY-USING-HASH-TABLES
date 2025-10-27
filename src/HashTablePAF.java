@@ -149,6 +149,14 @@ public class HashTablePAF implements HashTableInterface<String, Object> {
     return n;
   }
 
+  private int getPreviousPrime(int n) {
+        n--;
+        while (n > 1 && !isPrime(n)) {
+            n--;
+        }
+        return n;
+    }
+
   private boolean isPrime(int n) {
     if (n <= 1)
       return false;

@@ -1,13 +1,12 @@
 public class debugmain {
- 
-    
     public static void main(String[] args) {
         System.out.println("========================================");
         System.out.println("   HashTablePAF Test Programı");
         System.out.println("========================================\n");
         
         // Hash table oluştur
-        HashTablePAF hashTable = new HashTablePAF();
+        //HashTablePAF hashTable = new HashTablePAF();
+        HashTableSSF hashTable = new HashTableSSF(false);
         
         // Test 1: Temel put ve get işlemleri
         System.out.println("TEST 1: Temel Put ve Get İşlemleri");
@@ -92,7 +91,7 @@ public class debugmain {
         for (int i = 1; i <= 20; i++) {
             hashTable.put("item" + i, "Değer " + i);
         }
-        System.out.println("20 eleman eklendi.");
+        System.out.println(hashTable.size()-initialSize + " eleman eklendi.");
         System.out.println("Önceki boyut: " + initialSize);
         System.out.println("Yeni boyut: " + hashTable.size());
         System.out.println();
