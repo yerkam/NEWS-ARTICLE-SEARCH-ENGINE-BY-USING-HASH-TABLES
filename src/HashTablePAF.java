@@ -1,12 +1,14 @@
-public class HashTablePAF implements HashTableInterface<String, Object> {
+public class HashTablePAF extends  Collision implements HashTableInterface<String, Object> {
   private int hashSize = 10007; // Asal sayı boyutu
   private static final int Z = 33;
+  boolean  collision;
   HashEntry[] table;
 
-  public HashTablePAF() {
+  public HashTablePAF(boolean collisionChoice) {
     table = new HashEntry[hashSize];
     for (int i = 0; i < hashSize; i++)
       table[i] = null;
+      this.collision = collisionChoice; // false -> LP, true -> DH
   }
 
   @Override
@@ -25,11 +27,18 @@ public class HashTablePAF implements HashTableInterface<String, Object> {
     int hash = hashFunction(key);
     // System.out.println("Hash value: " + hash);
     if (table[hash] != null) {
+       if(collision) {
+          hash = linearProbing(key, hash, hashSize, table);
+        }
+         else{
+          hash = doubleHashing(key, hash, hashSize, table, getPreviousPrime(hashSize));
+        }
       System.out.println("There is a collision for key: " + key);
-      return;
+      
     }
 
     table[hash] = new HashEntry(key, value);
+    System.out.println("Inserted key: " + key + " at index: " + hash);
 
   }
 
