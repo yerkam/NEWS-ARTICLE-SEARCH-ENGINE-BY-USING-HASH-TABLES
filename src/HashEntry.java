@@ -1,19 +1,19 @@
-public class HashEntry {
-    private String key;
-    private Object value;
+public class HashEntry<K, V> {
+    private K key;
+    private V value;
     private boolean isDeleted;  // Linear Probing için silinme durumu
 
-    HashEntry(String key, Object value) {
+    HashEntry(K key, V value) {
           this.key = key;
           this.value = value;
           this.isDeleted = false;
     }     
 
-    public String getKey() {
+    public K getKey() {
           return key;
     }
 
-    public Object getValue() {
+    public V getValue() {
           return value;
     }
 

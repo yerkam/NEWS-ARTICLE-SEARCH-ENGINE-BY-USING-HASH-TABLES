@@ -1,28 +1,30 @@
-public class HashTableSSF extends Collision implements HashTableInterface<String, Object>{
+public class HashTableSSF<K, V> extends Collision implements HashTableInterface<K, V> {
 	
     private int hashSize = 10007; // Asal sayı boyutu
-    HashEntry[] table;
+    HashEntry<K, V>[] table;
     boolean collision;
 
+    @SuppressWarnings("unchecked")
     public HashTableSSF(boolean collisionChoice) {
-          table = new HashEntry[hashSize];
+          table = (HashEntry<K, V>[])new HashEntry[hashSize];
           for (int i = 0; i < hashSize; i++)
                 table[i] = null;
           this.collision = collisionChoice; // false -> LP, true -> DH
     }
 
     @Override
-    public Object get(String key) {
-    	int hash = hashFunction(key);
+    public V get(K key) {
+        int hash = hashFunction(key);
         if (table[hash] == null){
             System.out.println("Key not found: " + key);
             return null;
         } else
-            return table[hash].getValue();
+            return table[hash].getValue();  // Bu artık V tipinde dönecek
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void put(String key, Object value) {
+    public void put(K key, V value) {
       int index = hashFunction(key);
       if (table[index] != null) {
         if(collision) {
@@ -52,16 +54,16 @@ public class HashTableSSF extends Collision implements HashTableInterface<String
     }
 
     @Override
-    public boolean containsKey(String key) {
+    public boolean containsKey(K key) {
       int hash = hashFunction(key);
       return table[hash] != null && table[hash].getKey().equals(key);
     }
 
     @Override
-    public Object remove(String key) {
+    public V remove(K key) {
       int hash = hashFunction(key);
       if (table[hash] != null && table[hash].getKey().equals(key)){
-          Object value = table[hash].getValue();
+          V value = table[hash].getValue();
           table[hash] = null; // Sil
           return value;
       } else {
@@ -71,37 +73,32 @@ public class HashTableSSF extends Collision implements HashTableInterface<String
     }
 
     @Override
-    public int hashFunction(String key) {
-      int hash = 0;
-      char[] charArray = key.toCharArray();
-      for (char c : charArray) {
-          hash += (int) c;
-      }
-      return hash % hashSize; 
+    public int hashFunction(K key) {
+        String keyStr = key.toString(); // K'yi String'e çevir
+        int hash = 0;
+        
+        for (int i = 0; i < keyStr.length(); i++) {
+            hash += keyStr.charAt(i);
+        }
+        
+        return Math.abs(hash) % hashSize;
     }
 
     @Override
     public void resize() {
-      // Eski tabloyu sakla
-      int capacity = hashSize;
-      
-        HashEntry[] oldTable = table;
-        int oldCapacity = capacity;
-        
-        // Yeni boyutu hesapla (2 katı + asal sayı)
-        capacity = getNextPrime(capacity * 2);
-        
-        table = new HashEntry[capacity];
-        
-        // Eski elementleri yeni tabloya ekle (rehashing)
-        for (int i = 0; i < oldCapacity; i++) {
-            HashEntry entry = oldTable[i];
-            if (entry != null && !entry.isDeleted()) {  // LP/DH için
-                put(entry.getKey(), entry.getValue());  // Yeni hash ile ekle
-            }
+    HashEntry<K, V>[] oldTable = table;  // Generic ekleyin
+    int oldCapacity = hashSize;
+    
+    hashSize = getNextPrime(hashSize * 2);
+    table = (HashEntry<K, V>[]) new HashEntry[hashSize];  // Cast
+    
+    for (int i = 0; i < oldCapacity; i++) {
+        HashEntry<K, V> entry = oldTable[i];  // Generic ekleyin
+        if (entry != null && !entry.isDeleted()) {
+            put(entry.getKey(), entry.getValue());
         }
-        hashSize = capacity;
-     }
+    }
+}
 
     private int getNextPrime(int n) {
         while (!isPrime(n)) {
