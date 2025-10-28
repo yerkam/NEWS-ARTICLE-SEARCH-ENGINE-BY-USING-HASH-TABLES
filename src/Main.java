@@ -1,6 +1,6 @@
 import java.io.IOException;
 import java.util.*;
-public class Main {
+public class Main extends MainFunctionalities {
     public static void main(String[] args) {
         /*ExcelReader reader = new ExcelReader();
         try {
@@ -15,7 +15,7 @@ public class Main {
             e.printStackTrace();
         } */
 
-        ExcelReader reader = new ExcelReader();
+        /*ExcelReader reader = new ExcelReader();
         try {
             reader.loadArticles("CNN_Articels.csv", 1);
         } catch (IOException e) {
@@ -23,7 +23,7 @@ public class Main {
         } 
         List<String> article = reader.findArticleWithID("x");  // Hızlı arama yap
         System.out.println(article);
-        System.out.println(reader.articleCache);
+        System.out.println(reader.articleCache);*/
         
     }// end main
 }// end class 

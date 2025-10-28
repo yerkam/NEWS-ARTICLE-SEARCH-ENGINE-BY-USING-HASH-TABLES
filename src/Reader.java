@@ -1,6 +1,6 @@
 import java.io.*;
 import java.util.*;
-public class ExcelReader {
+public class Reader {
     
     public static final String DELIMITERS = "[-+=" +
                                                     " " +       // space
@@ -51,9 +51,7 @@ public class ExcelReader {
                                                     "※" +          // reference mark
                                                     "]";
     
-    public HashMap<String, List<String>> articleCache = new HashMap<>(); // Will be used own hash table implementation later
-    
-    public void loadArticles(String fileLocation, double loadFactor) throws IOException {
+    public void loadArticles(String fileLocation, double loadFactor, HashTableInterface articleCache) throws IOException {
         List<String> allLines = new ArrayList<>(); // Tüm satırları tutacak liste, daha sonra belirli bir oranda işleyeceğiz
         
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
@@ -86,8 +84,48 @@ public class ExcelReader {
         }
     }
 
-    public List<String> findArticleWithID(String ID) { // Hızlı arama için hash table kullan
-        List<String> result = articleCache.get(ID);
-        return result;
+    public void indexFileLines(String fileLocation, HashTableInterface articleCache) throws IOException { 
+        // Search engine için dosyadaki satırları indeksleme
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                articleCache.put(line, null); // Sadece anahtar olarak satırı ekle
+            }
+        }
+    }
+
+    public void countWordFrequencies(String searchFileLocation, String stopWordsFileLocation, HashTableInterface indexMap) throws IOException {
+        // Dosyadaki kelimelerin frekanslarını sayma ve indeksleme
+        try (BufferedReader reader = new BufferedReader(new FileReader(searchFileLocation))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] words = line.split(DELIMITERS);
+                String ID = line.substring(0, 9);
+                for (String word : words) {
+                    if(stopWordController(word, stopWordsFileLocation)) continue; // Stop word ise atla
+                    word = word.toLowerCase().trim();
+                    if (!word.isEmpty()) {
+                        
+                        // Index map value icinde bulunan hash tablelara ekleme yapma
+
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean stopWordController(String word, String stopWordsFileLocation){
+        // Kelimenin stop word olup olmadığını kontrol etme
+        try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
+            String stopWord;
+            while ((stopWord = reader.readLine()) != null) {
+                if (word.equalsIgnoreCase(stopWord.trim())) {
+                    return true; // Kelime bir stop word ise
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
