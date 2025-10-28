@@ -84,32 +84,38 @@ public class Reader {
         }
     }
 
-    public void indexFileLines(String fileLocation, HashTableInterface articleCache) throws IOException { 
-        // Search engine için dosyadaki satırları indeksleme
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                articleCache.put(line, null); // Sadece anahtar olarak satırı ekle
-            }
-        }
-    }
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
+                                    String loadFileLocation,
+                                    String searchWordsFileLocation,
+                                    String stopWordsFileLocation,
+                                    boolean hashTableChoice,
+                                    boolean collisionChoice) throws IOException {
+        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){
+            String wordToSearch;
+            while ((wordToSearch = searchWordsReader.readLine()) != null){
+                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap.
+                if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
+                else wordCountMap = new HashTablePAF<>(collisionChoice);
 
-    public void countWordFrequencies(String searchFileLocation, String stopWordsFileLocation, HashTableInterface indexMap) throws IOException {
-        // Dosyadaki kelimelerin frekanslarını sayma ve indeksleme
-        try (BufferedReader reader = new BufferedReader(new FileReader(searchFileLocation))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] words = line.split(DELIMITERS);
-                String ID = line.substring(0, 9);
-                for (String word : words) {
-                    if(stopWordController(word, stopWordsFileLocation)) continue; // Stop word ise atla
-                    word = word.toLowerCase().trim();
-                    if (!word.isEmpty()) {
-                        
-                        // Index map value icinde bulunan hash tablelara ekleme yapma
-
+                try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
+                    String line;
+                    reader.readLine(); // Ilk satırı  atla (başlıklar)
+                    while ((line = reader.readLine()) != null) {
+                        /**
+                         *  Kelime ayirma islemi iyilestirilecek
+                         */
+                        String[] words = line.split(DELIMITERS);
+                        String ID = line.substring(0, 9);
+                        int count = 0;
+                        for(String word : words){
+                            if(word.equalsIgnoreCase(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+                                count++;
+                            }
+                        }
+                        wordCountMap.put(ID, count);
                     }
                 }
+                indexMap.put(wordToSearch, wordCountMap);
             }
         }
     }
