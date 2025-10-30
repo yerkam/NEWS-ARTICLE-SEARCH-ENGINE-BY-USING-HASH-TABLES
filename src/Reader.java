@@ -59,6 +59,7 @@ public class Reader {
             reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
                 allLines.add(line);
+                //String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // ÖNEMLİ
             }
         }
         int totalRows = allLines.size();

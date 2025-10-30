@@ -1,6 +1,6 @@
 public class HashTableSSF<K, V> extends Collision implements HashTableInterface<K, V> {
 	
-    private int hashSize = 10007; // Asal sayı boyutu
+    private int hashSize = 1009; // Asal sayı boyutu
     HashEntry<K, V>[] table;
     boolean collision;
 
@@ -25,6 +25,7 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
     @SuppressWarnings("unchecked")
     @Override
     public void put(K key, V value) {
+      if(isFull()) resize(); // If is it full, resize the table
       int index = hashFunction(key);
       if (table[index] != null) {
         if(collision) {
@@ -51,6 +52,11 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
     @Override
     public boolean isEmpty() {
       return size() == 0;
+    }
+
+    @Override
+    public boolean isFull(){
+        return size() == hashSize;
     }
 
     @Override
@@ -86,19 +92,19 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
 
     @Override
     public void resize() {
-    HashEntry<K, V>[] oldTable = table;  // Generic ekleyin
-    int oldCapacity = hashSize;
-    
-    hashSize = getNextPrime(hashSize * 2);
-    table = (HashEntry<K, V>[]) new HashEntry[hashSize];  // Cast
-    
-    for (int i = 0; i < oldCapacity; i++) {
-        HashEntry<K, V> entry = oldTable[i];  // Generic ekleyin
-        if (entry != null && !entry.isDeleted()) {
-            put(entry.getKey(), entry.getValue());
+        HashEntry<K, V>[] oldTable = table;  // Generic ekleyin
+        int oldCapacity = hashSize;
+        
+        hashSize = getNextPrime(hashSize * 2);
+        table = (HashEntry<K, V>[]) new HashEntry[hashSize];  // Cast
+        
+        for (int i = 0; i < oldCapacity; i++) {
+            HashEntry<K, V> entry = oldTable[i];  // Generic ekleyin
+            if (entry != null && !entry.isDeleted()) {
+                put(entry.getKey(), entry.getValue());
+            }
         }
     }
-}
 
     private int getNextPrime(int n) {
         while (!isPrime(n)) {

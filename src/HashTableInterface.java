@@ -21,9 +21,15 @@ public interface HashTableInterface<K, V> {
 
     /**
      * Hash table'ın boş olup olmadığını kontrol eder
-     * @return tablo boşsa true, değilse false
+     * @return tablo boşsa true
      */
     boolean isEmpty();
+
+    /**
+     * Hash table'ın dolu olup olmadığını kontrol eder
+     * @return tablo doluysa true
+     */
+    boolean isFull();
 
     /**
      * Verilen key'in var olup olmadığını kontrol eder

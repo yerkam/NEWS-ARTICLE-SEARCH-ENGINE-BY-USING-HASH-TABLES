@@ -1,9 +1,12 @@
 import java.io.IOException;
 import java.util.*;
 public class Main extends MainFunctionalities {
-    public static void main(String[] args) {
-        /*ExcelReader reader = new ExcelReader();
-        try {
+    public static void main(String[] args) throws IOException {
+        Reader reader = new Reader();
+        HashTableSSF hash = new HashTableSSF<>(false);
+        reader.loadArticles("CNN_Articels.csv", 1, hash);
+        
+        /*try {
             String filePath = "CNN_Articels.csv";
             List<String> article = reader.findArticleWithID(filePath, "x");
             if (article != null) {

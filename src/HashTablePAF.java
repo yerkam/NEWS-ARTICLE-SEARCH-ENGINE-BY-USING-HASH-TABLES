@@ -1,5 +1,5 @@
 public class HashTablePAF<K, V> extends Collision implements HashTableInterface<K, V> {
-  private int hashSize = 10007; // Asal sayı boyutu
+  private int hashSize = 1009; // Asal sayı boyutu
   private static final int Z = 33;
   boolean collision;
   HashEntry<K, V>[] table;
@@ -23,6 +23,7 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
 
   @Override
   public void put(K key, V value) {
+    if(isFull()) resize(); // If is it full, resize the table
     int hash = hashFunction(key);
     if (table[hash] != null) {
       if (collision) {
@@ -51,6 +52,11 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
   @Override
   public boolean isEmpty() {
     return size() == 0;
+  }
+
+  @Override
+  public boolean isFull(){
+    return size() == hashSize;
   }
 
   @Override
