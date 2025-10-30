@@ -59,7 +59,6 @@ public class Reader {
             reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
                 allLines.add(line);
-                //String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // ÖNEMLİ
             }
         }
         int totalRows = allLines.size();
@@ -85,6 +84,18 @@ public class Reader {
         }
     }
 
+    /**
+     * The file path of the words to be searched, the file path of the words to be skipped while counting, 
+     * and the path of the file to be searched are given to the method. 
+     * This method automatically fills in a hash in the form <String, Hash<String, Integer>>.
+     * @param indexMap Hash that returns data
+     * @param loadFileLocation  Path to the file to search
+     * @param searchWordsFileLocation  Path to the file containing the words to search for
+     * @param stopWordsFileLocation  The path to the file containing the words to skip
+     * @param hashTableChoice A variables required for the hash table.
+     * @param collisionChoice  A variables required for the hash table.
+     * @throws IOException 
+     */
     public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
                                     String loadFileLocation,
                                     String searchWordsFileLocation,
@@ -102,18 +113,19 @@ public class Reader {
                     String line;
                     reader.readLine(); // Ilk satırı  atla (başlıklar)
                     while ((line = reader.readLine()) != null) {
-                        /**
-                         *  Kelime ayirma islemi iyilestirilecek
-                         */
-                        String[] words = line.split(DELIMITERS);
-                        String ID = line.substring(0, 9);
+                        String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // 11 ayrı partı arraye al
+                        
+                        
+                        String[] words = parts[10].split(" "); // Burada kelimelerin etrafındaki çöpler temizlenecek
+                                                                     // Hocadan alınacak isteğe göre hangi partların kelimeleri okunduğu belirlenecek
+
                         int count = 0;
                         for(String word : words){
                             if(word.equalsIgnoreCase(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
                                 count++;
                             }
                         }
-                        wordCountMap.put(ID, count);
+                        wordCountMap.put(parts[0], count); // parts[0]: ID
                     }
                 }
                 indexMap.put(wordToSearch, wordCountMap);
