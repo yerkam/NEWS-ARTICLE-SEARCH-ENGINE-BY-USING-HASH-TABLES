@@ -24,7 +24,7 @@ abstract class MainFunctionalities {
         }else{
             indexMap = new HashTablePAF<>(collisionChoice); // false -> LP, true -> DH
         }
-        Reader.computeWordFrequencyTable(indexMap, "CNN_Articles.csv", "search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
+        //Reader.computeWordFrequencyTable(indexMap, "CNN_Articles.csv", "search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
         
 
 

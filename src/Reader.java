@@ -85,10 +85,10 @@ public class Reader {
     }
 
     /**
-     * The file path of the words to be searched, the file path of the words to be skipped while counting, 
-     * and the path of the file to be searched are given to the method. 
-     * This method automatically fills in a hash in the form <String, Hash<String, Integer>>.
+     * This method fills the keys <String, Hash<String, Integer>> of the given hash with the words to be searched. 
+     * Fills the inner hash with <Article's ID, how many times the word found in the key of the outer hash is in the Article text>.
      * @param indexMap Hash that returns data
+     * @param loadFactor How much of the total data given will be used (0 <= F <= 1)
      * @param loadFileLocation  Path to the file to search
      * @param searchWordsFileLocation  Path to the file containing the words to search for
      * @param stopWordsFileLocation  The path to the file containing the words to skip
@@ -97,43 +97,49 @@ public class Reader {
      * @throws IOException 
      */
     public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
+                                    double loadFactor,
                                     String loadFileLocation,
                                     String searchWordsFileLocation,
                                     String stopWordsFileLocation,
                                     boolean hashTableChoice,
                                     boolean collisionChoice) throws IOException {
-        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){
+        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
             String wordToSearch;
-            while ((wordToSearch = searchWordsReader.readLine()) != null){
-                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap.
+            while ((wordToSearch = searchWordsReader.readLine()) != null){ 
+                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap's value.
                 if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
                 else wordCountMap = new HashTablePAF<>(collisionChoice);
-
-                try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
+                
+                List<String> allLines = new ArrayList<>();
+                try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
                     String line;
                     reader.readLine(); // Ilk satırı  atla (başlıklar)
                     while ((line = reader.readLine()) != null) {
-                        String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // 11 ayrı partı arraye al
-                        
-                        
-                        String[] words = parts[10].split(" "); // Burada kelimelerin etrafındaki çöpler temizlenecek
-                                                                     // Hocadan alınacak isteğe göre hangi partların kelimeleri okunduğu belirlenecek
-
-                        int count = 0;
-                        for(String word : words){
-                            if(word.equalsIgnoreCase(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
-                                count++;
-                            }
-                        }
-                        wordCountMap.put(parts[0], count); // parts[0]: ID
+                        allLines.add(line);
                     }
+                }
+
+                int rowsToProcess = (int)(allLines.size()*loadFactor);
+
+                for (int i = 0; i < rowsToProcess; i++) {
+                    String line = allLines.get(i);
+                    String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+                    String[] words = parts[10].split(" "); // Article textin kelimeleri
+                    int count = 0;
+                    for(String word : words){
+                        
+                        if(word.equalsIgnoreCase(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+                            count++;
+                        }
+                    }
+                    wordCountMap.put(parts[0], count); // parts[0]: ID
                 }
                 indexMap.put(wordToSearch, wordCountMap);
             }
         }
     }
 
-    public boolean stopWordController(String word, String stopWordsFileLocation){
+    private boolean stopWordController(String word, String stopWordsFileLocation){
         // Kelimenin stop word olup olmadığını kontrol etme
         try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
             String stopWord;
