@@ -3,7 +3,8 @@ import java.util.*;
 public class Reader {
     
     public static final String DELIMITERS = "[-+=" +
-                                                    " " +       // space
+                                                    " " + 
+                                                    "." +       // space
                                                     "\r\n " +    //carriage return line fit
                                                     "1234567890" + //numbers
                                                     "’'\"" +       // apostrophe
@@ -124,7 +125,7 @@ public class Reader {
                     for(String word : words){
                         word = word.toLowerCase();
                         
-
+                        word = cleanWord(word, DELIMITERS);
                         // Kelime temizligi buraya
 
                         if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
@@ -151,5 +152,34 @@ public class Reader {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public static String cleanWord(String word, String delimiter) {
+        // Base case: word boşsa veya delimiter boşsa
+        if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
+            return word;
+        }
+        
+        boolean foundAndRemoved = false;
+        String newWord = word;
+        
+        // Delimiter'daki her karakteri kontrol et
+        for (char delimChar : delimiter.toCharArray()) {
+            int index = newWord.indexOf(delimChar);
+            if (index != -1) {
+                // İlk bulduğun karakteri sil
+                newWord = newWord.substring(0, index) + newWord.substring(index + 1);
+                foundAndRemoved = true;
+                break; // Bir karakter sildik, recursive çağrı yapacağız
+            }
+        }
+        
+        // Eğer hiçbir karakter silinmediyse, döngüden çık
+        if (!foundAndRemoved) {
+            return newWord;
+        }
+        
+        // Recursive olarak devam et
+        return cleanWord(newWord, delimiter);
     }
 }
