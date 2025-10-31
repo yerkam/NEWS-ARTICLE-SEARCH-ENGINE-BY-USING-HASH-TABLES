@@ -70,14 +70,9 @@ public class Reader {
         // Belirlenen sayıda satırı işle
         for (int i = 0; i < rowsToProcess; i++) {
             String line = allLines.get(i);
-            String[] parts = line.split(",");
-
-            
+            String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
             if (parts.length > 0) { // Boş satırları atla
                 String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
-                
-                // KELIMELERIN TEMIZLENMESI VE NORMALLESTIRILMESI KISMI EKSIK
-
                 articleCache.put(articleId, new ArrayList<>(Arrays.asList(parts))); // HashTable'a ekle
             }
             System.out.println("Loaded " + (i + 1) + " / " + rowsToProcess + " articles."); // Loading progress
@@ -127,8 +122,12 @@ public class Reader {
                     String[] words = parts[10].split(" "); // Article textin kelimeleri
                     int count = 0;
                     for(String word : words){
+                        word = word.toLowerCase();
                         
-                        if(word.equalsIgnoreCase(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+
+                        // Kelime temizligi buraya
+
+                        if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
                             count++;
                         }
                     }
