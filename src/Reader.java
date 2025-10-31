@@ -126,7 +126,8 @@ public class Reader {
                         word = word.toLowerCase();
                         
                         word = cleanWord(word, DELIMITERS);
-                        // Kelime temizligi buraya
+                        int wordSize = wordToSearch.toCharArray().length; 
+                        word = word.substring(0, wordSize);
 
                         if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
                             count++;
@@ -154,7 +155,7 @@ public class Reader {
         return false;
     }
 
-    public static String cleanWord(String word, String delimiter) {
+    private String cleanWord(String word, String delimiter) {
         // Base case: word boşsa veya delimiter boşsa
         if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
             return word;
