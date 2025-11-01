@@ -2,7 +2,8 @@ import java.io.IOException;
 
 public class Main extends MainFunctionalities {
     public static void main(String[] args) throws IOException, InterruptedException{
-        double loadFactor = 0.5;
+        long startTime = System.currentTimeMillis();
+        double loadFactor = 0.05;
         boolean hashTableChoice = true; // false -> PAF, true -> SSF
         boolean collisionChoice = false; // false -> LP, true -> DH
         HashTableInterface<String, HashTableInterface<String, Integer>> HashTable;
@@ -14,6 +15,9 @@ public class Main extends MainFunctionalities {
         
         HashTable = findArticleWithSearchEngine(loadFactor, hashTableChoice, collisionChoice);
 
+        long endTime = System.currentTimeMillis();
+        long totalTime = endTime - startTime;
+        System.out.println(totalTime/1000);
         System.out.print(HashTable.getCollisionCount());
         
     }// end main

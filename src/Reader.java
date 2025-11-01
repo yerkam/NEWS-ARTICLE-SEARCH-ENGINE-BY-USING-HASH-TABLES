@@ -1,4 +1,6 @@
 import java.io.*;
+import java.lang.reflect.Array;
+import java.time.LocalTime;
 import java.util.*;
 public class Reader {
     
@@ -100,39 +102,69 @@ public class Reader {
                                     String stopWordsFileLocation,
                                     boolean hashTableChoice,
                                     boolean collisionChoice) throws IOException, InterruptedException {
-            List<String> allLines = new ArrayList<>();
-            try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
-                String line;
-                reader.readLine(); // Ilk satırı  atla (başlıklar)
-                while ((line = reader.readLine()) != null) {
-                    allLines.add(line);
+        List<String> allLines = new ArrayList<>();
+        HashTableInterface<String, Boolean> stopWords;
+        HashTableInterface<String, List<String>> cleanedWords;// Her bir elemani bir satirdaki satirin article text kismindaki temizlenmis kelimeleri tutar, stop wordlari cikarir.
+        if(hashTableChoice){ 
+            cleanedWords = new HashTableSSF<>(collisionChoice);
+            stopWords = new HashTableSSF<>(collisionChoice);
+        }
+        else {
+            cleanedWords = new HashTablePAF<>(collisionChoice);
+            stopWords = new HashTablePAF<>(collisionChoice);
+        }  
+
+        // Butun Article'lari okuyup temizle ve bunlari kaydet
+        loadStopWords(stopWords, stopWordsFileLocation);
+        System.out.println(stopWords.size());
+        try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
+            String line;
+            reader.readLine(); // Ilk satırı  atla (başlıklar)
+            while ((line = reader.readLine()) != null) {
+                allLines.add(line);
+            }
+        }
+        System.out.println("Articles loading...");
+        int rowsToProcess = (int)(allLines.size()*loadFactor);
+        System.out.println("Row number of process: " + rowsToProcess);
+        for (int i = 0; i < rowsToProcess; i++) {
+            String line = allLines.get(i);
+            String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+            String articleId = parts[0];
+
+            // Kelimeleri temizle ve lowercase yap - BİR KEZ
+            String[] rawWords = parts[10].split(" ");
+            
+            List<String> cleanedWordsTemp = new ArrayList<String>();
+            for (String word : rawWords) {
+                String cleaned = cleanWord(word.toLowerCase(), DELIMITERS);
+                if(stopWords.containsKey(cleaned)) continue;
+                if (!cleaned.isEmpty()) {
+                    cleanedWordsTemp.add(cleaned);
                 }
             }
-            int wordDone = 0;
-            try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
+            cleanedWords.put(articleId, cleanedWordsTemp);
+        }
+
+        // Aranacak kelimeleri kaydedilen temizlenmis article'larda arat
+        int wordDone = 0;
+        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
             String wordToSearch;
             while ((wordToSearch = searchWordsReader.readLine()) != null){ 
                 HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap's value.
                 if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
                 else wordCountMap = new HashTablePAF<>(collisionChoice);
 
-                int rowsToProcess = (int)(allLines.size()*loadFactor);
-
                 for (int i = 0; i < rowsToProcess; i++) {
                     String line = allLines.get(i);
-                    String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-                    String[] words = parts[10].split(" "); // Article textin kelimeleri
-                    int count = 0;
+                    List<String> words = cleanedWords.get(line.substring(0,10)); // line.substring(0,10): ID
+                    int count = 0; // Kelime sayisi
                     for(String word : words){
-                        word = word.toLowerCase();
-                        
-                        word = cleanWord(word, DELIMITERS);
-
-                        if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+                        if(word.equals(wordToSearch)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
                             count++;
                         }
                     }
-                    wordCountMap.put(parts[0], count); // parts[0]: ID
+                    wordCountMap.put(line.substring(0,10), count); // line.substring(0,10): ID
                     if((int)rowsToProcess * 0.0001 == i){
                         System.out.println("%0.1 complete");
                     }
@@ -144,19 +176,17 @@ public class Reader {
         }// end wordToSearch
     }
 
-    private boolean stopWordController(String word, String stopWordsFileLocation){
-        // Kelimenin stop word olup olmadığını kontrol etme
+    private void loadStopWords(HashTableInterface<String, Boolean> temp, String stopWordsFileLocation){
+        // Stop wordlari bir liste kaydet
         try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
             String stopWord;
             while ((stopWord = reader.readLine()) != null) {
-                if (word.equalsIgnoreCase(stopWord.trim())) {
-                    return true; // Kelime bir stop word ise
-                }
+                if(!stopWord.isEmpty())
+                    temp.put(stopWord, true);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
     private String cleanWord(String word, String delimiter) {

@@ -16,17 +16,44 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
     @Override
     public V get(K key) {
         int hash = hashFunction(key);
-        if (table[hash] == null){
-            System.out.println("Key not found: " + key);
-            return null;
-        } else
-            return table[hash].getValue();  // Bu artık V tipinde dönecek
+        int startIndex = hash;
+        
+        // İlk pozisyonu kontrol et
+        if (table[hash] != null && table[hash].getKey().equals(key)) {
+            return table[hash].getValue();
+        }
+        
+        // Collision varsa probing ile ara
+        if (collision) {
+            // Linear Probing
+            hash = (hash + 1) % hashSize;
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    return table[hash].getValue();
+                }
+                hash = (hash + 1) % hashSize;
+            }
+        } else {
+            // Double Hashing
+            int q = getPreviousPrime(hashSize);
+            int d = q - (startIndex % q);
+            hash = (startIndex + d) % hashSize;
+            
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    return table[hash].getValue();
+                }
+                hash = (hash + d) % hashSize;
+            }
+        }
+        System.out.println("Key not found: " + key);
+        return null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void put(K key, V value) {
-      if(isFull()) resize(); // If is it full, resize the table
+      if(size() >= hashSize * 0.7) resize(); // %70 dolunca resize et
       int index = hashFunction(key);
       if (table[index] != null) {
         collisionCount++;
@@ -63,21 +90,82 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
 
     @Override
     public boolean containsKey(K key) {
-      int hash = hashFunction(key);
-      return table[hash] != null && table[hash].getKey().equals(key);
+        int hash = hashFunction(key);
+        int startIndex = hash;
+        
+        // İlk pozisyonu kontrol et
+        if (table[hash] != null && table[hash].getKey().equals(key)) {
+            return true;
+        }
+        
+        // Collision varsa probing ile ara
+        if (collision) {
+            // Linear Probing
+            hash = (hash + 1) % hashSize;
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    return true;
+                }
+                hash = (hash + 1) % hashSize;
+            }
+        } else {
+            // Double Hashing
+            int q = getPreviousPrime(hashSize);
+            int d = q - (startIndex % q);
+            hash = (startIndex + d) % hashSize;
+            
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    return true;
+                }
+                hash = (hash + d) % hashSize;
+            }
+        }
+        return false;
     }
 
     @Override
     public V remove(K key) {
-      int hash = hashFunction(key);
-      if (table[hash] != null && table[hash].getKey().equals(key)){
-          V value = table[hash].getValue();
-          table[hash] = null; // Sil
-          return value;
-      } else {
-          System.out.println("Key not found: " + key);
-          return null; // Key bulunamadı
-      }
+        int hash = hashFunction(key);
+        int startIndex = hash;
+        
+        // İlk pozisyonu kontrol et
+        if (table[hash] != null && table[hash].getKey().equals(key)) {
+            V value = table[hash].getValue();
+            table[hash] = null;
+            return value;
+        }
+        
+        // Collision varsa probing ile ara
+        if (collision) {
+            // Linear Probing
+            hash = (hash + 1) % hashSize;
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    V value = table[hash].getValue();
+                    table[hash] = null;
+                    return value;
+                }
+                hash = (hash + 1) % hashSize;
+            }
+        } else {
+            // Double Hashing
+            int q = getPreviousPrime(hashSize);
+            int d = q - (startIndex % q);
+            hash = (startIndex + d) % hashSize;
+            
+            while (hash != startIndex && table[hash] != null) {
+                if (table[hash].getKey().equals(key)) {
+                    V value = table[hash].getValue();
+                    table[hash] = null;
+                    return value;
+                }
+                hash = (hash + d) % hashSize;
+            }
+        }
+        
+        System.out.println("Key not found: " + key);
+        return null;
     }
 
     @Override
@@ -102,7 +190,7 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
         
         for (int i = 0; i < oldCapacity; i++) {
             HashEntry<K, V> entry = oldTable[i];  // Generic ekleyin
-            if (entry != null && !entry.isDeleted()) {
+            if (entry != null) {
                 put(entry.getKey(), entry.getValue());
             }
         }
