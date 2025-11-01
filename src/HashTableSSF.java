@@ -1,8 +1,9 @@
 public class HashTableSSF<K, V> extends Collision implements HashTableInterface<K, V> {
 	
     private int hashSize = 1009; // Asal sayı boyutu
-    HashEntry<K, V>[] table;
-    boolean collision;
+    private HashEntry<K, V>[] table;
+    private boolean collision;
+    private int collisionCount = 0;
 
     @SuppressWarnings("unchecked")
     public HashTableSSF(boolean collisionChoice) {
@@ -28,6 +29,7 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
       if(isFull()) resize(); // If is it full, resize the table
       int index = hashFunction(key);
       if (table[index] != null) {
+        collisionCount++;
         if(collision) {
           index = linearProbing(key, index, hashSize, table);
         } else{
@@ -35,7 +37,7 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
         }
       }
       table[index] = new HashEntry(key, value);
-      System.out.println("Inserted key: " + key + " at index: " + index);
+      //System.out.println("Inserted key: " + key + " at index: " + index);
     }
 
     @Override
@@ -106,6 +108,12 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
         }
     }
 
+    @Override
+    public void clear(){
+        for (int i = 0; i < hashSize; i++) 
+                table[i] = null;
+    }
+
     private int getNextPrime(int n) {
         while (!isPrime(n)) {
             n++;
@@ -133,5 +141,8 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
         return true;
     }
 
-    
+    @Override
+    public int getCollisionCount(){
+    return collisionCount;
+  }
 }

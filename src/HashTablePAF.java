@@ -1,8 +1,9 @@
 public class HashTablePAF<K, V> extends Collision implements HashTableInterface<K, V> {
   private int hashSize = 1009; // Asal sayı boyutu
   private static final int Z = 33;
-  boolean collision;
-  HashEntry<K, V>[] table;
+  private boolean collision;
+  private HashEntry<K, V>[] table;
+  private int collisionCount = 0;
 
   @SuppressWarnings("unchecked")
   public HashTablePAF(boolean collisionChoice) {
@@ -26,6 +27,7 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
     if(isFull()) resize(); // If is it full, resize the table
     int hash = hashFunction(key);
     if (table[hash] != null) {
+      collisionCount++;
       if (collision) {
         hash = linearProbing(key, hash, hashSize, table);
       } else {
@@ -153,6 +155,12 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
     }
   }
 
+  @Override
+    public void clear(){
+        for (int i = 0; i < hashSize; i++) 
+                table[i] = null;
+    }
+
   private int getNextPrime(int n) {
     while (!isPrime(n)) {
       n++;
@@ -181,5 +189,10 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
         return false;
     }
     return true;
+  }
+
+  @Override
+  public int getCollisionCount(){
+    return collisionCount;
   }
 }

@@ -3,7 +3,7 @@ import java.util.List;
 
 abstract class MainFunctionalities {
     
-    public List<String> findArticleWithID(String ID,double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException { // Hızlı arama için hash table kullan
+    static public List<String> findArticleWithID(String ID,double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException { // Hızlı arama için hash table kullan
         HashTableInterface<String, List<String>> articleCache;
         Reader Reader = new Reader();
         if(hashTableChoice){
@@ -16,7 +16,7 @@ abstract class MainFunctionalities {
         return value;
     }
 
-    public List<String> findArticleWithSearchEngine(double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException{
+    static public HashTableInterface<String, HashTableInterface<String, Integer>> findArticleWithSearchEngine(double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException, InterruptedException{
         HashTableInterface<String, HashTableInterface<String, Integer>> indexMap;
         Reader Reader = new Reader();
         if(hashTableChoice){
@@ -24,10 +24,7 @@ abstract class MainFunctionalities {
         }else{
             indexMap = new HashTablePAF<>(collisionChoice); // false -> LP, true -> DH
         }
-        //Reader.computeWordFrequencyTable(indexMap, "CNN_Articles.csv", "search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
-        
-
-
-        return null;
+        Reader.computeWordFrequencyTable(indexMap, loadFactor, "CNN_Articels.csv", "search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
+        return indexMap;
     }
 }

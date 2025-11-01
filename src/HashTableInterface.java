@@ -57,4 +57,15 @@ public interface HashTableInterface<K, V> {
      * @return Yeniden boyutlandırılmış tablo
      */
     void resize();
+
+    /**
+     * Hash'i komple temizler
+     * @return Temizlenmiş Hash
+     */
+    void clear();
+
+    /**
+     * @return kac tane collision olduğunu döndürür
+     */
+    int getCollisionCount();
 }

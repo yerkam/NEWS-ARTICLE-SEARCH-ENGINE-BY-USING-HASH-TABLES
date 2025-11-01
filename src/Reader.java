@@ -52,7 +52,7 @@ public class Reader {
                                                     "※" +          // reference mark
                                                     "]";
     
-    public void loadArticles(String fileLocation, double loadFactor, HashTableInterface articleCache) throws IOException {
+    public void loadArticles(String fileLocation, double loadFactor, HashTableInterface<String, List<String>> articleCache) throws IOException {
         List<String> allLines = new ArrayList<>(); // Tüm satırları tutacak liste, daha sonra belirli bir oranda işleyeceğiz
         
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
@@ -91,6 +91,7 @@ public class Reader {
      * @param hashTableChoice A variables required for the hash table.
      * @param collisionChoice  A variables required for the hash table.
      * @throws IOException 
+     * @throws InterruptedException 
      */
     public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
                                     double loadFactor,
@@ -98,22 +99,22 @@ public class Reader {
                                     String searchWordsFileLocation,
                                     String stopWordsFileLocation,
                                     boolean hashTableChoice,
-                                    boolean collisionChoice) throws IOException {
-        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
+                                    boolean collisionChoice) throws IOException, InterruptedException {
+            List<String> allLines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
+                String line;
+                reader.readLine(); // Ilk satırı  atla (başlıklar)
+                while ((line = reader.readLine()) != null) {
+                    allLines.add(line);
+                }
+            }
+            int wordDone = 0;
+            try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
             String wordToSearch;
             while ((wordToSearch = searchWordsReader.readLine()) != null){ 
                 HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap's value.
                 if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
                 else wordCountMap = new HashTablePAF<>(collisionChoice);
-                
-                List<String> allLines = new ArrayList<>();
-                try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
-                    String line;
-                    reader.readLine(); // Ilk satırı  atla (başlıklar)
-                    while ((line = reader.readLine()) != null) {
-                        allLines.add(line);
-                    }
-                }
 
                 int rowsToProcess = (int)(allLines.size()*loadFactor);
 
@@ -126,18 +127,21 @@ public class Reader {
                         word = word.toLowerCase();
                         
                         word = cleanWord(word, DELIMITERS);
-                        int wordSize = wordToSearch.toCharArray().length; 
-                        word = word.substring(0, wordSize);
 
                         if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
                             count++;
                         }
                     }
                     wordCountMap.put(parts[0], count); // parts[0]: ID
+                    if((int)rowsToProcess * 0.0001 == i){
+                        System.out.println("%0.1 complete");
+                    }
                 }
                 indexMap.put(wordToSearch, wordCountMap);
+                wordDone++;
+            System.out.println("Word done: " + wordDone);
             }
-        }
+        }// end wordToSearch
     }
 
     private boolean stopWordController(String word, String stopWordsFileLocation){
