@@ -1,79 +1,83 @@
 import java.io.*;
 import java.util.*;
+
 public class Reader {
-    
+
     public static final String DELIMITERS = "[-+=" +
-                                                    " " + 
-                                                    "." +       // space
-                                                    "\r\n " +    //carriage return line fit
-                                                    "1234567890" + //numbers
-                                                    "’'\"" +       // apostrophe
-                                                    "(){}<>\\[\\]" + // brackets
-                                                    ":" +        // colon
-                                                    "," +        // comma
-                                                    "‒–—―" +     // dashes
-                                                    "…" +        // ellipsis
-                                                    "!" +        // exclamation mark
-                                                    "«»" +       // guillemets
-                                                    "-‐" +       // hyphen
-                                                    "?" +        // question mark
-                                                    "‘’“”" +     // quotation marks
-                                                    ";" +        // semicolon
-                                                    "/" +        // slash/stroke
-                                                    "⁄" +        // solidus
-                                                    "␠" +        // space?   
-                                                    "·" +        // interpunct
-                                                    "&" +        // ampersand
-                                                    "@" +        // at sign
-                                                    "*" +        // asterisk
-                                                    "\\" +       // backslash
-                                                    "•" +        // bullet
-                                                    "^" +        // caret
-                                                    "¤¢$€£¥₩₪" + // currency
-                                                    "†‡" +       // dagger
-                                                    "°" +        // degree
-                                                    "¡" +        // inverted exclamation point
-                                                    "¿" +        // inverted question mark
-                                                    "¬" +        // negation
-                                                    "#" +        // number sign (hashtag)
-                                                    "№" +        // numero sign ()
-                                                    "%‰‱" +      // percent and related signs
-                                                    "¶" +        // pilcrow
-                                                    "′" +        // prime
-                                                    "§" +        // section sign
-                                                    "~" +        // tilde/swung dash
-                                                    "¨" +        // umlaut/diaeresis
-                                                    "_" +        // underscore/understrike
-                                                    "|¦" +       // vertical/pipe/broken bar
-                                                    "⁂" +        // asterism
-                                                    "☞" +        // index/fist
-                                                    "∴" +        // therefore sign
-                                                    "‽" +        // interrobang
-                                                    "※" +          // reference mark
-                                                    "]";
-    
-    public void loadArticles(String fileLocation, double loadFactor, HashTableInterface<String, List<String>> articleCache) throws IOException {
-        List<String> allLines = new ArrayList<>(); // Tüm satırları tutacak liste, daha sonra belirli bir oranda işleyeceğiz
-        
+            " " +
+            "." + // space
+            "\r\n " + // carriage return line fit
+            "1234567890" + // numbers
+            "’'\"" + // apostrophe
+            "(){}<>\\[\\]" + // brackets
+            ":" + // colon
+            "," + // comma
+            "‒–—―" + // dashes
+            "…" + // ellipsis
+            "!" + // exclamation mark
+            "«»" + // guillemets
+            "-‐" + // hyphen
+            "?" + // question mark
+            "‘’“”" + // quotation marks
+            ";" + // semicolon
+            "/" + // slash/stroke
+            "⁄" + // solidus
+            "␠" + // space?
+            "·" + // interpunct
+            "&" + // ampersand
+            "@" + // at sign
+            "*" + // asterisk
+            "\\" + // backslash
+            "•" + // bullet
+            "^" + // caret
+            "¤¢$€£¥₩₪" + // currency
+            "†‡" + // dagger
+            "°" + // degree
+            "¡" + // inverted exclamation point
+            "¿" + // inverted question mark
+            "¬" + // negation
+            "#" + // number sign (hashtag)
+            "№" + // numero sign ()
+            "%‰‱" + // percent and related signs
+            "¶" + // pilcrow
+            "′" + // prime
+            "§" + // section sign
+            "~" + // tilde/swung dash
+            "¨" + // umlaut/diaeresis
+            "_" + // underscore/understrike
+            "|¦" + // vertical/pipe/broken bar
+            "⁂" + // asterism
+            "☞" + // index/fist
+            "∴" + // therefore sign
+            "‽" + // interrobang
+            "※" + // reference mark
+            "]";
+
+    public void loadArticles(String fileLocation, double loadFactor,
+            HashTableInterface<String, List<String>> articleCache) throws IOException {
+        List<String> allLines = new ArrayList<>(); // Tüm satırları tutacak liste, daha sonra belirli bir oranda
+                                                   // işleyeceğiz
+
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
-            reader.readLine(); // Ilk satırı  atla (başlıklar)
+            reader.readLine(); // Ilk satırı atla (başlıklar)
             while ((line = reader.readLine()) != null) {
                 allLines.add(line);
             }
         }
         int totalRows = allLines.size();
         int rowsToProcess = (int) (totalRows * loadFactor);
-        
+
         System.out.println("Total rows: " + totalRows);
-        System.out.println("Processing: " + rowsToProcess + " rows (" + (loadFactor*100) + "%)");
-        
+        System.out.println("Processing: " + rowsToProcess + " rows (" + (loadFactor * 100) + "%)");
+
         // Belirlenen sayıda satırı işle
         for (int i = 0; i < rowsToProcess; i++) {
             String line = allLines.get(i);
             String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
             if (parts.length > 0) { // Boş satırları atla
-                String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
+                String articleId = parts[0].trim();
+                parts[0] = ""; // ID'yi al ve array'den temizle
                 articleCache.put(articleId, new ArrayList<>(Arrays.asList(parts))); // HashTable'a ekle
             }
             System.out.println("Loaded " + (i + 1) + " / " + rowsToProcess + " articles."); // Loading progress
@@ -81,70 +85,86 @@ public class Reader {
     }
 
     /**
-     * This method fills the keys <String, Hash<String, Integer>> of the given hash with the words to be searched. 
-     * Fills the inner hash with <Article's ID, how many times the word found in the key of the outer hash is in the Article text>.
-     * @param indexMap Hash that returns data
-     * @param loadFactor How much of the total data given will be used (0 <= F <= 1)
-     * @param loadFileLocation  Path to the file to search
-     * @param searchWordsFileLocation  Path to the file containing the words to search for
-     * @param stopWordsFileLocation  The path to the file containing the words to skip
-     * @param hashTableChoice A variables required for the hash table.
-     * @param collisionChoice  A variables required for the hash table.
-     * @throws IOException 
-     * @throws InterruptedException 
+     * This method fills the keys <String, Hash<String, Integer>> of the given hash
+     * with the words to be searched.
+     * Fills the inner hash with <Article's ID, how many times the word found in the
+     * key of the outer hash is in the Article text>.
+     * 
+     * @param indexMap                Hash that returns data
+     * @param loadFactor              How much of the total data given will be used
+     *                                (0 <= F <= 1)
+     * @param loadFileLocation        Path to the file to search
+     * @param searchWordsFileLocation Path to the file containing the words to
+     *                                search for
+     * @param stopWordsFileLocation   The path to the file containing the words to
+     *                                skip
+     * @param hashTableChoice         A variables required for the hash table.
+     * @param collisionChoice         A variables required for the hash table.
+     * @throws IOException
+     * @throws InterruptedException
      */
     public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
-                                    double loadFactor,
-                                    String loadFileLocation,
-                                    String searchWordsFileLocation,
-                                    String stopWordsFileLocation,
-                                    boolean hashTableChoice,
-                                    boolean collisionChoice) throws IOException, InterruptedException {
-            List<String> allLines = new ArrayList<>();
-            try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
-                String line;
-                reader.readLine(); // Ilk satırı  atla (başlıklar)
-                while ((line = reader.readLine()) != null) {
-                    allLines.add(line);
-                }
+            double loadFactor,
+            String loadFileLocation,
+            String searchWordsFileLocation,
+            String stopWordsFileLocation,
+            boolean hashTableChoice,
+            boolean collisionChoice) throws IOException, InterruptedException {
+        List<String> allLines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
+            String line;
+            reader.readLine(); // Ilk satırı atla (başlıklar)
+            while ((line = reader.readLine()) != null) {
+                allLines.add(line);
             }
-            int wordDone = 0;
-            try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
+        }
+        int wordDone = 0;
+        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))) {
             String wordToSearch;
-            while ((wordToSearch = searchWordsReader.readLine()) != null){ 
-                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap's value.
-                if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
-                else wordCountMap = new HashTablePAF<>(collisionChoice);
+            while ((wordToSearch = searchWordsReader.readLine()) != null) {
+                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the
+                                                                  // indexMap's value.
+                if (hashTableChoice)
+                    wordCountMap = new HashTableSSF<>(collisionChoice);
+                else
+                    wordCountMap = new HashTablePAF<>(collisionChoice);
 
-                int rowsToProcess = (int)(allLines.size()*loadFactor);
+                int rowsToProcess = (int) (allLines.size() * loadFactor);
 
                 for (int i = 0; i < rowsToProcess; i++) {
                     String line = allLines.get(i);
                     String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
                     String[] words = parts[10].split(" "); // Article textin kelimeleri
                     int count = 0;
-                    for(String word : words){
+                    for (String word : words) {
                         word = word.toLowerCase();
-                        
-                        word = cleanWord(word, DELIMITERS);
 
-                        if(word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+                        word = cleanWordregex(word, DELIMITERS);
+
+                        if (word.equals(wordToSearch) && !stopWordController(word, stopWordsFileLocation)) { // Satirdaki
+                                                                                                             // kelime
+                                                                                                             // aranan
+                                                                                                             // kelimeye
+                                                                                                             // esitse
+                                                                                                             // && stop
+                                                                                                             // word
+                                                                                                             // degilse
                             count++;
                         }
                     }
                     wordCountMap.put(parts[0], count); // parts[0]: ID
-                    if((int)rowsToProcess * 0.0001 == i){
+                    if ((int) rowsToProcess * 0.0001 == i) {
                         System.out.println("%0.1 complete");
                     }
                 }
                 indexMap.put(wordToSearch, wordCountMap);
                 wordDone++;
-            System.out.println("Word done: " + wordDone);
+                System.out.println("Word done: " + wordDone);
             }
-        }// end wordToSearch
+        } // end wordToSearch
     }
 
-    private boolean stopWordController(String word, String stopWordsFileLocation){
+    private boolean stopWordController(String word, String stopWordsFileLocation) {
         // Kelimenin stop word olup olmadığını kontrol etme
         try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
             String stopWord;
@@ -159,15 +179,15 @@ public class Reader {
         return false;
     }
 
-    private String cleanWord(String word, String delimiter) {
+    private String cleanrecursive(String word, String delimiter) {
         // Base case: word boşsa veya delimiter boşsa
         if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
             return word;
         }
-        
+
         boolean foundAndRemoved = false;
         String newWord = word;
-        
+
         // Delimiter'daki her karakteri kontrol et
         for (char delimChar : delimiter.toCharArray()) {
             int index = newWord.indexOf(delimChar);
@@ -178,13 +198,90 @@ public class Reader {
                 break; // Bir karakter sildik, recursive çağrı yapacağız
             }
         }
-        
+
         // Eğer hiçbir karakter silinmediyse, döngüden çık
         if (!foundAndRemoved) {
             return newWord;
         }
-        
+
         // Recursive olarak devam et
         return cleanWord(newWord, delimiter);
     }
+
+    private String cleanrecursivestringbuilder(String word, String delimiter) {
+        // Base case: word boşsa veya delimiter boşsa
+        if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
+            return word;
+        }
+
+        boolean foundAndRemoved = false;
+        StringBuilder currentWord = new StringBuilder(word);
+
+        // Delimiter'daki her karakteri kontrol et
+        for (char delimChar : delimiter.toCharArray()) {
+            for (int i = 0; i < currentWord.length(); i++) {
+                if (currentWord.charAt(i) == delimChar) {
+                    // İlk bulduğun karakteri sil
+                    currentWord.deleteCharAt(i);
+                    foundAndRemoved = true;
+                    break; // Bir karakter sildik, recursive çağrı yapacağız
+                }
+            }
+            if (foundAndRemoved)
+                break;
+        }
+
+        // Eğer hiçbir karakter silinmediyse, döngüden çık
+        if (!foundAndRemoved) {
+            return currentWord.toString();
+        }
+
+        // Recursive olarak devam et
+        return cleanWord(currentWord.toString(), delimiter);
+    }
+
+    private String cleanWord(String word, String delimiter) {
+        // 1. Basit Durum Kontrolleri
+        if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
+            return word;
+        }
+
+        String result = word;
+        int start = 0;
+        int end = result.length() - 1;
+
+        // 2. Baştan Temizleme: Kelimenin başındaki delimiter karakterlerini atla
+        // Karakteri delimiter'da aramak için indexOf() kullanılır
+        while (start <= end && delimiter.indexOf(result.charAt(start)) != -1) {
+            start++;
+        }
+
+        // 3. Sondan Temizleme: Kelimenin sonundaki delimiter karakterlerini atla
+        while (end >= start && delimiter.indexOf(result.charAt(end)) != -1) {
+            end--;
+        }
+
+        // 4. Temizlenmiş Alt Dizeyi Döndürme
+        // Eğer start > end ise kelimenin tamamı temizlenmiştir, boş string döndür
+        if (start > end) {
+            return "";
+        }
+
+        // start ve end, temizlenmiş kelimenin sınırlarını belirler
+        return result.substring(start, end + 1);
+    }
+
+    private String cleanWordregex(String word, String delimiter) {
+
+        return word.replaceAll(delimiter, "");
+    }
+    /*
+     * Performans Karşılaştırması
+     * YaklaşımZamanAlanStack RiskMevcut (Recursive)O(n²×m)O(n×d)✗ VarStringBuilder
+     * (İteratif)O(n+m)O(n)✓ YokRegexO(n×m)O(n)✓ Yok
+     * Önerim: İlk yaklaşımı (StringBuilder + HashSet) kullan. En hızlı ve en
+     * güvenli çözüm bu. Özellikle büyük stringlerde recursive yaklaşım stack
+     * overflow'a neden olabilir.
+     * Hangi yaklaşımı tercih etmek istersin? Senaryona göre detaylandırabilirim.
+     */
 }
