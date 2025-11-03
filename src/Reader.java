@@ -122,9 +122,9 @@ public class Reader {
                 allLines.add(line);
             }
         }
-        System.out.println("Articles loading...");
         int rowsToProcess = (int)(allLines.size()*loadFactor);
         System.out.println("Row number of process: " + rowsToProcess);
+        System.out.println("Articles loading...");
         for (int i = 0; i < rowsToProcess; i++) {
             String line = allLines.get(i);
             String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
@@ -163,9 +163,6 @@ public class Reader {
                         }
                     }
                     wordCountMap.put(line.substring(0,10), count); // line.substring(0,10): ID
-                    if((int)rowsToProcess * 0.0001 == i){
-                        System.out.println("%0.1 complete");
-                    }
                 }
                 indexMap.put(wordToSearch, wordCountMap);
                 wordDone++;
