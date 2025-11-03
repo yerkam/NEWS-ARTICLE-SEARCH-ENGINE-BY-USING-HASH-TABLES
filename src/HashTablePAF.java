@@ -61,7 +61,6 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
       } else {
         hash = doubleHashing(key, hash, hashSize, table, getPreviousPrime(hashSize));
       }
-      System.out.println("There is a collision for key: " + key);
     }
 
     table[hash] = new HashEntry<>(key, value);
