@@ -65,7 +65,6 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
     }
 
     table[hash] = new HashEntry<>(key, value);
-    System.out.println("Inserted key: " + key + " at index: " + hash);
   }
 
   @Override
