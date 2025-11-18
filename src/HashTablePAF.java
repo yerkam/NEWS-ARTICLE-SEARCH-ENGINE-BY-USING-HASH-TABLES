@@ -50,7 +50,6 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
               hash = (hash + d) % hashSize;
           }
       }
-      System.out.println("Key not found: " + key);
       return null;
   }
 

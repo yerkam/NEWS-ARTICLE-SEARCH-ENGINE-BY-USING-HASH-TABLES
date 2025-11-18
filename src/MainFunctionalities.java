@@ -1,10 +1,10 @@
 import java.io.IOException;
-import java.util.List;
+import java.util.LinkedList;
 
 abstract class MainFunctionalities {
     
-    static public HashTableInterface<String, List<String>> loadArticles(double loadFactor, boolean hashTableChoice, boolean collisionChoice)throws IOException{
-        HashTableInterface<String, List<String>> articleCache;
+    static public HashTableInterface<String, LinkedList<String>> loadArticles(double loadFactor, boolean hashTableChoice, boolean collisionChoice)throws IOException{
+        HashTableInterface<String, LinkedList<String>> articleCache;
         Reader Reader = new Reader();
         if(hashTableChoice){
             articleCache = new HashTableSSF<>(collisionChoice, loadFactor); // false -> LP, true -> DH

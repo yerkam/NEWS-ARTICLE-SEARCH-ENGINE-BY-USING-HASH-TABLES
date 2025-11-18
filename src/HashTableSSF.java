@@ -50,7 +50,6 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
                 hash = (hash + d) % hashSize;
             }
         }
-        System.out.println("Key not found: " + key);
         return null;
     }
 
@@ -58,13 +57,17 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
     public void put(K key, V value) {
       if(size() >= hashSize * loadFactor) resize(); // load factor'a göre resize et 
       int index = hashFunction(key);
-      if (table[index] != null) {
+      if (table[index] != null && !table[index].getKey().equals(key)) {
         collisionCount++;
         if(collision) {
           index = linearProbing(key, index, hashSize, table);
         } else{
           index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
         }
+      }else if (table[index] != null && table[index].getKey().equals(key)) {
+          // Key zaten varsa, değeri güncelle
+          table[index].setValue(value);
+          return;
       }
       table[index] = new HashEntry<>(key, value);
     }

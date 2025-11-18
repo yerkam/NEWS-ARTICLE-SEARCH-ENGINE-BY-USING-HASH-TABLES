@@ -52,7 +52,7 @@ public class Reader {
                                                     "※" +          // reference mark
                                                     "]";
     
-    public void loadArticles(String fileLocation, HashTableInterface<String, List<String>> articleCache) throws IOException {
+    public void loadArticles(String fileLocation, HashTableInterface<String, LinkedList<String>> articleCache) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             reader.readLine(); // Ilk satırı  atla (başlıklar)
@@ -60,7 +60,7 @@ public class Reader {
                 String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
                 if (parts.length > 0) { // Boş satırları atla
                     String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
-                    articleCache.put(articleId, new ArrayList<>(Arrays.asList(parts))); // HashTable'a ekle
+                    articleCache.put(articleId, new LinkedList<>(Arrays.asList(parts))); // HashTable'a ekle
                 }
             }
         }
@@ -106,7 +106,7 @@ public class Reader {
         loadStopWords(stopWords, stopWordsFileLocation);
         System.out.println(stopWords.size());
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
+        /*try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
             String line;
             reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
@@ -155,7 +155,38 @@ public class Reader {
                 wordDone++;
             System.out.println("Word done: " + wordDone);
             }
-        }// end wordToSearch
+        }// end wordToSearch */
+
+        int wordDone = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
+            String line;
+            reader.readLine(); // başlığı atla
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+                String articleId = parts[0].trim();
+
+                String[] rawWords = parts[10].split(" ");
+                for (String raw : rawWords) {
+                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS);
+                    if (cleaned == null || cleaned.isEmpty()) continue;
+                    if (stopWords.containsKey(cleaned)) continue;
+
+                    // indexMap.get(cleaned) veya oluştur
+                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned);
+                    if (inner == null) {
+                        if (hashTableChoice) inner = new HashTableSSF<>(collisionChoice, loadFactor);
+                        else inner = new HashTablePAF<>(collisionChoice, loadFactor);
+                        indexMap.put(cleaned, inner);
+                    }
+
+                    Integer prev = inner.get(articleId);
+                    if (prev == null) inner.put(articleId, 1);
+                    else inner.put(articleId, prev + 1);
+                } // for rawWords
+                wordDone++;
+                System.out.println("Articles processed: " + wordDone);
+            }
+        }
     }
 
     private void loadStopWords(HashTableInterface<String, Boolean> temp, String stopWordsFileLocation){

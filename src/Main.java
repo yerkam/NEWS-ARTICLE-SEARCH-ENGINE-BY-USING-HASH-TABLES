@@ -1,16 +1,15 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Main extends MainFunctionalities {
     public static void main(String[] args) throws IOException, InterruptedException{
         long startTime = System.currentTimeMillis();
-        double loadFactor = 0.01;
+        double loadFactor = 0.5;
         boolean hashTableChoice = true; // false -> PAF, true -> SSF
         boolean collisionChoice = false; // false -> LP, true -> DH
         HashTableInterface<String, HashTableInterface<String, Integer>> wordArticleCountMap;
-        HashTableInterface<String, List<String>> IDhashTable;
+        HashTableInterface<String, LinkedList<String>> IDhashTable;
         if(hashTableChoice){
             IDhashTable = new HashTableSSF<>(collisionChoice, loadFactor);
             wordArticleCountMap = new HashTableSSF<>(collisionChoice, loadFactor);
@@ -22,6 +21,7 @@ public class Main extends MainFunctionalities {
         IDhashTable = loadArticles(loadFactor, hashTableChoice, collisionChoice);
         wordArticleCountMap = findArticleWithSearchEngine(loadFactor, hashTableChoice, collisionChoice);
 
+        // Measure time
         long endTime = System.currentTimeMillis();
         long totalTime = endTime - startTime;
         System.out.println(totalTime/1000);
@@ -30,6 +30,7 @@ public class Main extends MainFunctionalities {
         
         String input = "";
         Scanner scn = new Scanner(System.in);
+        // User Interface
         while(!input.equals("exit")){
             System.out.println("1 - Choose one of the searched words and find out which article is most relevant.");
             System.out.println("2 - Find Article by News ID number.");
@@ -46,25 +47,42 @@ public class Main extends MainFunctionalities {
                 if(!wordArticleCountMap.containsKey(input)) System.out.println("No word was selected from the search word list.");
                 else{
                     HashTableInterface<String, Integer> tempHashTable;
+
                     if(hashTableChoice) tempHashTable = new HashTableSSF<>(collisionChoice, loadFactor);
                     else tempHashTable = new HashTablePAF<>(collisionChoice, loadFactor); 
+
+                    // En alakali makaleyi bul
+                    // Kelimeye ait makale frekans tablosunu al
                     tempHashTable = wordArticleCountMap.get(input);
-                    /*
-                     * HashTable'de en relevant article kimde belirleme eksik
-                     */
+                    LinkedList<String> keySet = tempHashTable.keySet();
+                    String relevantArticleID = "";
+                    int maxFrequency = -1;
+                    for(String key : keySet){
+                        int frequency = tempHashTable.get(key);
+                        if(frequency > maxFrequency){
+                            maxFrequency = frequency;
+                            relevantArticleID = key;
+                        }
+                    }
+                    // En alakali makaleyi yazdir
+                    LinkedList<String> Article = new LinkedList<>();
+                    Article = IDhashTable.get(relevantArticleID);
+                    Article.poll();
+                    System.out.println(Article);
                 }
-            }else if (input.equals("2")){
-                System.out.print("Enter the 10-digit article ID number: ");
+            }else if (input.equals("2")){ 
+                System.out.print("Enter the 10-digit article ID number: "); // Makale ID'si isteniyor
                 input = scn.next();
                 System.out.println();
-                if(IDhashTable.containsKey(input)){
-                    List<String> Article = new ArrayList<>();
+                if(IDhashTable.containsKey(input)){ // Makale ID'si var mi kontrol et
+                    // Varsa makaleyi yazdir
+                    LinkedList<String> Article = new LinkedList<>();
                     Article = IDhashTable.get(input);
+                    Article.poll();
                     System.out.println(Article);
                 }else{
                     System.out.println("The Article ID you entered could not be found.");
                 }
-                
             }else{
                 System.out.println("An unknown input was entered. Please enter it again.");
             }
