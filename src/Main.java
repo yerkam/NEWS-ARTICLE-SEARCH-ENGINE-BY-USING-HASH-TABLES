@@ -17,9 +17,12 @@ public class Main extends MainFunctionalities {
             IDhashTable = new HashTablePAF<>(collisionChoice, loadFactor);
             wordArticleCountMap = new HashTablePAF<>(collisionChoice, loadFactor); 
         }
-        
+        System.out.println("Files are loading, please wait...");
         IDhashTable = loadArticles(loadFactor, hashTableChoice, collisionChoice);
         wordArticleCountMap = findArticleWithSearchEngine(loadFactor, hashTableChoice, collisionChoice);
+        System.out.println("Files loaded successfully.");
+
+        Thread.sleep(1000); // Pause for 1 second
 
         // Measure time
         long endTime = System.currentTimeMillis();
@@ -35,7 +38,7 @@ public class Main extends MainFunctionalities {
             System.out.println("1 - Choose one of the searched words and find out which article is most relevant.");
             System.out.println("2 - Find Article by News ID number.");
             
-            System.out.println("Type 'exit' to quit.");
+            System.out.println("9 - Exit the program.");
             System.out.print("Enter the number of the transaction you want to perform: ");
             System.out.println();
             input = scn.next();
@@ -67,7 +70,8 @@ public class Main extends MainFunctionalities {
                     // En alakali makaleyi yazdir
                     LinkedList<String> Article = new LinkedList<>();
                     Article = IDhashTable.get(relevantArticleID);
-                    Article.poll();
+                    Article.pop();
+                    Article.addFirst(relevantArticleID);
                     System.out.println(Article);
                 }
             }else if (input.equals("2")){ 
@@ -83,6 +87,8 @@ public class Main extends MainFunctionalities {
                 }else{
                     System.out.println("The Article ID you entered could not be found.");
                 }
+            }else if(input.equals("9")){
+                System.out.println("Exiting the program...");
             }else{
                 System.out.println("An unknown input was entered. Please enter it again.");
             }

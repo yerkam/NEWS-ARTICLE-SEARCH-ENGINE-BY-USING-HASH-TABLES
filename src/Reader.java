@@ -104,7 +104,6 @@ public class Reader {
         */
         // Stop wordlari yükle
         loadStopWords(stopWords, stopWordsFileLocation);
-        System.out.println(stopWords.size());
 
         /*try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
             String line;
@@ -184,7 +183,9 @@ public class Reader {
                     else inner.put(articleId, prev + 1);
                 } // for rawWords
                 wordDone++;
-                System.out.println("Articles processed: " + wordDone);
+                if (wordDone % 1000 == 0) {
+                    System.out.println("Articles processed: " + wordDone);
+                }
             }
         }
     }

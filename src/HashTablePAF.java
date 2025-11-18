@@ -7,6 +7,7 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
   private HashEntry<K, V>[] table;
   private int collisionCount = 0;
   private double loadFactor;
+  private int currentSize = 0;
 
   @SuppressWarnings("unchecked")
   public HashTablePAF(boolean collisionChoice, double loadFactor) {
@@ -66,17 +67,12 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
       }
     }
     table[hash] = new HashEntry<>(key, value);
+    currentSize++;
   }
 
   @Override
   public int size() {
-    int count = 0;
-    for (HashEntry<K, V> entry : table) {
-      if (entry != null) {
-        count++;
-      }
-    }
-    return count;
+    return currentSize;
   }
 
   @Override

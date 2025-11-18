@@ -7,6 +7,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
     private boolean collision;
     private int collisionCount = 0;
     private double loadFactor;
+    private int currentSize = 0;
 
     @SuppressWarnings("unchecked")
     public HashTableSSF(boolean collisionChoice, double loadFactor) {
@@ -70,17 +71,12 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
           return;
       }
       table[index] = new HashEntry<>(key, value);
+      currentSize++;
     }
 
     @Override
     public int size() { 
-      int count = 0;
-      for (HashEntry<K, V> entry : table) {
-          if (entry != null) {
-              count++;
-          }
-      }
-      return count;
+      return currentSize;
     }
 
     @Override
@@ -193,6 +189,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         
         hashSize = getNextPrime(hashSize * 2);
         table = (HashEntry<K, V>[]) new HashEntry[hashSize];  // Cast
+        currentSize = 0;
         
         for (int i = 0; i < oldCapacity; i++) {
             HashEntry<K, V> entry = oldTable[i];  // Generic ekleyin

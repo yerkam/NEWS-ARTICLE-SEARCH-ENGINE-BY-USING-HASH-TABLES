@@ -10,7 +10,7 @@
             "name": "Current File",
             "request": "launch",
             "mainClass": "Main",
-            "vmArgs": "-Xms4g -Xmx16g"
+            "vmArgs": "-Xms8g -Xmx24g"
         }
     ]
 }
