@@ -1,16 +1,20 @@
-public class HashTablePAF<K, V> extends Collision implements HashTableInterface<K, V> {
+import java.util.LinkedList;
+
+public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInterface<K, V> {
   private int hashSize = 1009; // Asal sayı boyutu
   private static final int Z = 33;
   private boolean collision;
   private HashEntry<K, V>[] table;
   private int collisionCount = 0;
+  private double loadFactor;
 
   @SuppressWarnings("unchecked")
-  public HashTablePAF(boolean collisionChoice) {
+  public HashTablePAF(boolean collisionChoice, double loadFactor) {
     table = (HashEntry<K, V>[]) new HashEntry[hashSize];
     for (int i = 0; i < hashSize; i++)
       table[i] = null;
     this.collision = collisionChoice; // false -> LP, true -> DH
+    this.loadFactor = loadFactor; 
   }
 
   @Override
@@ -52,7 +56,7 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
 
   @Override
   public void put(K key, V value) {
-    if(size() >= hashSize * 0.7) resize(); // %70 dolunca resize et
+    if(size() >= hashSize * loadFactor) resize(); // %70 dolunca resize et
     int hash = hashFunction(key);
     if (table[hash] != null) {
       collisionCount++;
@@ -62,7 +66,6 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
         hash = doubleHashing(key, hash, hashSize, table, getPreviousPrime(hashSize));
       }
     }
-
     table[hash] = new HashEntry<>(key, value);
   }
 
@@ -276,4 +279,15 @@ public class HashTablePAF<K, V> extends Collision implements HashTableInterface<
   public int getCollisionCount(){
     return collisionCount;
   }
+
+  @Override
+    public LinkedList<K> keySet() {
+        LinkedList<K> keys = new LinkedList<K>();
+        for (HashEntry<K, V> entry : table) {
+            if (entry != null) {
+                keys.push(entry.getKey());
+            }
+        }
+        return keys;
+    }
 }

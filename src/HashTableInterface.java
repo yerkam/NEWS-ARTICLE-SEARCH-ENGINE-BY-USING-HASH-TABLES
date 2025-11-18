@@ -68,4 +68,9 @@ public interface HashTableInterface<K, V> {
      * @return kac tane collision olduğunu döndürür
      */
     int getCollisionCount();
+
+    /**
+     * @return Tüm key'leri içeren bir set döndürür
+     */
+    java.util.LinkedList<K> keySet();
 }

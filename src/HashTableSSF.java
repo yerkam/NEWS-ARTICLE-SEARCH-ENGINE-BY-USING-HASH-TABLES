@@ -1,16 +1,20 @@
-public class HashTableSSF<K, V> extends Collision implements HashTableInterface<K, V> {
+import java.util.*;
+
+public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInterface<K, V> {
 	
     private int hashSize = 1009; // Asal sayı boyutu
     private HashEntry<K, V>[] table;
     private boolean collision;
     private int collisionCount = 0;
+    private double loadFactor;
 
     @SuppressWarnings("unchecked")
-    public HashTableSSF(boolean collisionChoice) {
+    public HashTableSSF(boolean collisionChoice, double loadFactor) {
           table = (HashEntry<K, V>[])new HashEntry[hashSize];
           for (int i = 0; i < hashSize; i++)
                 table[i] = null;
           this.collision = collisionChoice; // false -> LP, true -> DH
+          this.loadFactor = loadFactor;
     }
 
     @Override
@@ -50,10 +54,9 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void put(K key, V value) {
-      if(size() >= hashSize * 0.7) resize(); // %70 dolunca resize et
+      if(size() >= hashSize * loadFactor) resize(); // load factor'a göre resize et 
       int index = hashFunction(key);
       if (table[index] != null) {
         collisionCount++;
@@ -63,14 +66,13 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
           index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
         }
       }
-      table[index] = new HashEntry(key, value);
-      //System.out.println("Inserted key: " + key + " at index: " + index);
+      table[index] = new HashEntry<>(key, value);
     }
 
     @Override
     public int size() { 
       int count = 0;
-      for (HashEntry entry : table) {
+      for (HashEntry<K, V> entry : table) {
           if (entry != null) {
               count++;
           }
@@ -181,6 +183,7 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void resize() {
         HashEntry<K, V>[] oldTable = table;  // Generic ekleyin
         int oldCapacity = hashSize;
@@ -233,4 +236,15 @@ public class HashTableSSF<K, V> extends Collision implements HashTableInterface<
     public int getCollisionCount(){
     return collisionCount;
   }
+
+    @Override
+    public LinkedList<K> keySet() {
+        LinkedList<K> keys = new LinkedList<K>();
+        for (HashEntry<K, V> entry : table) {
+            if (entry != null) {
+                keys.push(entry.getKey());
+            }
+        }
+        return keys;
+    }
 }

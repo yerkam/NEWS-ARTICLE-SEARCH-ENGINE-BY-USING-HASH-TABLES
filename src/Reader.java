@@ -52,31 +52,17 @@ public class Reader {
                                                     "※" +          // reference mark
                                                     "]";
     
-    public void loadArticles(String fileLocation, double loadFactor, HashTableInterface<String, List<String>> articleCache) throws IOException {
-        List<String> allLines = new ArrayList<>(); // Tüm satırları tutacak liste, daha sonra belirli bir oranda işleyeceğiz
-        
+    public void loadArticles(String fileLocation, HashTableInterface<String, List<String>> articleCache) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
             reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
-                allLines.add(line);
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
+                if (parts.length > 0) { // Boş satırları atla
+                    String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
+                    articleCache.put(articleId, new ArrayList<>(Arrays.asList(parts))); // HashTable'a ekle
+                }
             }
-        }
-        int totalRows = allLines.size();
-        int rowsToProcess = (int) (totalRows * loadFactor);
-        
-        System.out.println("Total rows: " + totalRows);
-        System.out.println("Processing: " + rowsToProcess + " rows (" + (loadFactor*100) + "%)");
-        
-        // Belirlenen sayıda satırı işle
-        for (int i = 0; i < rowsToProcess; i++) {
-            String line = allLines.get(i);
-            String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
-            if (parts.length > 0) { // Boş satırları atla
-                String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
-                articleCache.put(articleId, new ArrayList<>(Arrays.asList(parts))); // HashTable'a ekle
-            }
-            System.out.println("Loaded " + (i + 1) + " / " + rowsToProcess + " articles."); // Loading progress
         }
     }
 
@@ -100,48 +86,47 @@ public class Reader {
                                     String stopWordsFileLocation,
                                     boolean hashTableChoice,
                                     boolean collisionChoice) throws IOException, InterruptedException {
-        List<String> allLines = new ArrayList<>();
-        HashTableInterface<String, Boolean> stopWords;
+                                        
+        HashTableInterface<String, Boolean> stopWords; 
         HashTableInterface<String, List<String>> cleanedWords;// Her bir elemani bir satirdaki satirin article text kismindaki temizlenmis kelimeleri tutar, stop wordlari cikarir.
+                                                              // Key: Article ID, Value: List of cleaned words in the article text
         if(hashTableChoice){ 
-            cleanedWords = new HashTableSSF<>(collisionChoice);
-            stopWords = new HashTableSSF<>(collisionChoice);
+            cleanedWords = new HashTableSSF<>(collisionChoice, loadFactor);
+            stopWords = new HashTableSSF<>(collisionChoice, loadFactor);
         }
         else {
-            cleanedWords = new HashTablePAF<>(collisionChoice);
-            stopWords = new HashTablePAF<>(collisionChoice);
+            cleanedWords = new HashTablePAF<>(collisionChoice, loadFactor);
+            stopWords = new HashTablePAF<>(collisionChoice, loadFactor);
         }  
 
-        // Butun Article'lari okuyup temizle ve bunlari kaydet
+        /**
+         *  Butun Article'lari okuyup temizle ve bunlari kaydet
+        */
+        // Stop wordlari yükle
         loadStopWords(stopWords, stopWordsFileLocation);
         System.out.println(stopWords.size());
+
         try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
             String line;
             reader.readLine(); // Ilk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
-                allLines.add(line);
-            }
-        }
-        int rowsToProcess = (int)(allLines.size()*loadFactor);
-        System.out.println("Row number of process: " + rowsToProcess);
-        System.out.println("Articles loading...");
-        for (int i = 0; i < rowsToProcess; i++) {
-            String line = allLines.get(i);
-            String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-            String articleId = parts[0];
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+                String articleId = parts[0];
 
-            // Kelimeleri temizle ve lowercase yap - BİR KEZ
-            String[] rawWords = parts[10].split(" ");
-            
-            List<String> cleanedWordsTemp = new ArrayList<String>();
-            for (String word : rawWords) {
-                String cleaned = cleanWord(word.toLowerCase(), DELIMITERS);
-                if(stopWords.containsKey(cleaned)) continue;
-                if (!cleaned.isEmpty()) {
-                    cleanedWordsTemp.add(cleaned);
+                // Kelimeleri temizle ve lowercase yap - BİR KEZ
+                
+                String[] rawWords = parts[10].split(" ");
+                // Stop wordlari cikart ve temizlenmis kelimeleri kaydet
+                List<String> cleanedWordsTemp = new ArrayList<String>();
+                for (String word : rawWords) {
+                    String cleaned = cleanWord(word.toLowerCase(), DELIMITERS);
+                    if(stopWords.containsKey(cleaned)) continue;
+                    if (!cleaned.isEmpty()) {
+                        cleanedWordsTemp.add(cleaned);
+                    }
                 }
+                cleanedWords.put(articleId, cleanedWordsTemp);
             }
-            cleanedWords.put(articleId, cleanedWordsTemp);
         }
 
         // Aranacak kelimeleri kaydedilen temizlenmis article'larda arat
@@ -149,22 +134,24 @@ public class Reader {
         try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
             String wordToSearch;
             while ((wordToSearch = searchWordsReader.readLine()) != null){ 
-                HashTableInterface<String, Integer> wordCountMap; // We initialize a separate hash to be placed in the indexMap's value.
-                if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice);
-                else wordCountMap = new HashTablePAF<>(collisionChoice);
+                HashTableInterface<String, Integer> wordCountMap; // <word, Hash<articleID, count>>'in icindeki hash
+                
+                if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice, loadFactor);
+                else wordCountMap = new HashTablePAF<>(collisionChoice, loadFactor);
+                LinkedList<String> articleIDs = cleanedWords.keySet(); // Tüm article ID'lerini al
 
-                for (int i = 0; i < rowsToProcess; i++) {
-                    String line = allLines.get(i);
-                    List<String> words = cleanedWords.get(line.substring(0,10)); // line.substring(0,10): ID
+                while(articleIDs.peek() != null){
+                    String articleID = articleIDs.pop();
+                    List<String> words = cleanedWords.get(articleID);
                     int count = 0; // Kelime sayisi
-                    for(String word : words){
-                        if(word.equals(wordToSearch)){ // Satirdaki kelime aranan kelimeye esitse && stop word degilse
+                    for(String word : words){ // Article'daki her bir kelimeyi kontrol et
+                        if(word.equals(wordToSearch)) // Satirdaki kelime aranan kelimeye esitse
                             count++;
-                        }
                     }
-                    wordCountMap.put(line.substring(0,10), count); // line.substring(0,10): ID
+                    wordCountMap.put(articleID, count); // ic hash'e ekle <articleID, count>
                 }
-                indexMap.put(wordToSearch, wordCountMap);
+
+                indexMap.put(wordToSearch, wordCountMap); // dis hash'e ekle <word, ic hash>
                 wordDone++;
             System.out.println("Word done: " + wordDone);
             }
