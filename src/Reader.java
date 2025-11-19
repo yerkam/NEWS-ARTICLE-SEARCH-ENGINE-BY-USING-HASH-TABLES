@@ -79,23 +79,91 @@ public class Reader {
      * @throws IOException 
      * @throws InterruptedException 
      */
-    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap,
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // For performance matrix
                                     double loadFactor,
                                     String loadFileLocation,
                                     String searchWordsFileLocation,
                                     String stopWordsFileLocation,
                                     boolean hashTableChoice,
-                                    boolean collisionChoice) throws IOException, InterruptedException {
+                                    boolean collisionChoice) throws IOException, InterruptedException { 
                                         
         HashTableInterface<String, Boolean> stopWords; 
-        HashTableInterface<String, List<String>> cleanedWords;// Her bir elemani bir satirdaki satirin article text kismindaki temizlenmis kelimeleri tutar, stop wordlari cikarir.
-                                                              // Key: Article ID, Value: List of cleaned words in the article text
+        HashTableInterface<String, Boolean> searchWords;
         if(hashTableChoice){ 
-            cleanedWords = new HashTableSSF<>(collisionChoice, loadFactor);
+            stopWords = new HashTableSSF<>(collisionChoice, loadFactor);
+            searchWords = new HashTableSSF<>(collisionChoice, loadFactor);
+        }
+        else {
+            stopWords = new HashTablePAF<>(collisionChoice, loadFactor);
+            searchWords = new HashTablePAF<>(collisionChoice, loadFactor);
+        }  
+
+        /**
+         *  Butun Article'lari okuyup temizle ve bunlari kaydet
+        */
+        // Stop wordlari yükle
+        loadStopWords(stopWords, stopWordsFileLocation);
+
+       
+
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(searchWordsFileLocation))){
+            String wordToSearch;
+
+            while ((wordToSearch = reader.readLine()) != null){ 
+                searchWords.put(wordToSearch, false);
+            }
+
+            // Artik arama kelimeleri set olarak var, simdi tum article'lari okuyup gerekli kelimeleri ekle
+        }
+
+        int wordDone = 0;
+        try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
+            String line;
+            reader.readLine(); // başlığı atla
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+                String articleId = parts[0].trim();
+
+                String[] rawWords = parts[10].split(" ");
+                for (String raw : rawWords) {
+                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS);
+                    if (cleaned == null || cleaned.isEmpty()) continue;
+                    if (stopWords.containsKey(cleaned)) continue;
+                    if (!searchWords.containsKey(cleaned)) continue;
+
+                    // indexMap.get(cleaned) veya oluştur
+                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned);
+                    if (inner == null) {
+                        if (hashTableChoice) inner = new HashTableSSF<>(collisionChoice, loadFactor);
+                        else inner = new HashTablePAF<>(collisionChoice, loadFactor);
+                        indexMap.put(cleaned, inner);
+                    }
+
+                    Integer prev = inner.get(articleId);
+                    if (prev == null) inner.put(articleId, 1);
+                    else inner.put(articleId, prev + 1);
+                } // for rawWords
+                wordDone++;
+                if (wordDone % 1000 == 0) {
+                    System.out.println("Articles processed: " + wordDone);
+                }
+            }
+        }
+    }
+
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // General search engine
+                                    double loadFactor,
+                                    String loadFileLocation,
+                                    String stopWordsFileLocation,
+                                    boolean hashTableChoice,
+                                    boolean collisionChoice) throws IOException, InterruptedException {
+                                        
+        HashTableInterface<String, Boolean> stopWords;
+        if(hashTableChoice){ 
             stopWords = new HashTableSSF<>(collisionChoice, loadFactor);
         }
         else {
-            cleanedWords = new HashTablePAF<>(collisionChoice, loadFactor);
             stopWords = new HashTablePAF<>(collisionChoice, loadFactor);
         }  
 
@@ -105,56 +173,7 @@ public class Reader {
         // Stop wordlari yükle
         loadStopWords(stopWords, stopWordsFileLocation);
 
-        /*try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) { 
-            String line;
-            reader.readLine(); // Ilk satırı  atla (başlıklar)
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-                String articleId = parts[0];
-
-                // Kelimeleri temizle ve lowercase yap - BİR KEZ
-                
-                String[] rawWords = parts[10].split(" ");
-                // Stop wordlari cikart ve temizlenmis kelimeleri kaydet
-                List<String> cleanedWordsTemp = new ArrayList<String>();
-                for (String word : rawWords) {
-                    String cleaned = cleanWord(word.toLowerCase(), DELIMITERS);
-                    if(stopWords.containsKey(cleaned)) continue;
-                    if (!cleaned.isEmpty()) {
-                        cleanedWordsTemp.add(cleaned);
-                    }
-                }
-                cleanedWords.put(articleId, cleanedWordsTemp);
-            }
-        }
-
-        // Aranacak kelimeleri kaydedilen temizlenmis article'larda arat
-        int wordDone = 0;
-        try (BufferedReader searchWordsReader = new BufferedReader(new FileReader(searchWordsFileLocation))){ 
-            String wordToSearch;
-            while ((wordToSearch = searchWordsReader.readLine()) != null){ 
-                HashTableInterface<String, Integer> wordCountMap; // <word, Hash<articleID, count>>'in icindeki hash
-                
-                if(hashTableChoice) wordCountMap = new HashTableSSF<>(collisionChoice, loadFactor);
-                else wordCountMap = new HashTablePAF<>(collisionChoice, loadFactor);
-                LinkedList<String> articleIDs = cleanedWords.keySet(); // Tüm article ID'lerini al
-
-                while(articleIDs.peek() != null){
-                    String articleID = articleIDs.pop();
-                    List<String> words = cleanedWords.get(articleID);
-                    int count = 0; // Kelime sayisi
-                    for(String word : words){ // Article'daki her bir kelimeyi kontrol et
-                        if(word.equals(wordToSearch)) // Satirdaki kelime aranan kelimeye esitse
-                            count++;
-                    }
-                    wordCountMap.put(articleID, count); // ic hash'e ekle <articleID, count>
-                }
-
-                indexMap.put(wordToSearch, wordCountMap); // dis hash'e ekle <word, ic hash>
-                wordDone++;
-            System.out.println("Word done: " + wordDone);
-            }
-        }// end wordToSearch */
+       
 
         int wordDone = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {

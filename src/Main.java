@@ -7,7 +7,7 @@ public class Main extends MainFunctionalities {
         long startTime = System.currentTimeMillis();
         double loadFactor = 0.5;
         boolean hashTableChoice = true; // false -> PAF, true -> SSF
-        boolean collisionChoice = false; // false -> LP, true -> DH
+        boolean collisionChoice = false; // false -> DH, true -> LP
         HashTableInterface<String, HashTableInterface<String, Integer>> wordArticleCountMap;
         HashTableInterface<String, LinkedList<String>> IDhashTable;
         if(hashTableChoice){
@@ -34,7 +34,7 @@ public class Main extends MainFunctionalities {
         String input = "";
         Scanner scn = new Scanner(System.in);
         // User Interface
-        while(!input.equals("exit")){
+        while(!input.equals("9")){
             System.out.println("1 - Choose one of the searched words and find out which article is most relevant.");
             System.out.println("2 - Find Article by News ID number.");
             
@@ -65,6 +65,8 @@ public class Main extends MainFunctionalities {
                         if(frequency > maxFrequency){
                             maxFrequency = frequency;
                             relevantArticleID = key;
+                        }else if(frequency == maxFrequency){
+                            // Eger frekanslar esit ise durumu kontrol et
                         }
                     }
                     // En alakali makaleyi yazdir

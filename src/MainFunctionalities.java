@@ -23,7 +23,19 @@ abstract class MainFunctionalities {
         }else{
             indexMap = new HashTablePAF<>(collisionChoice, loadFactor); // false -> LP, true -> DH
         }
-        Reader.computeWordFrequencyTable(indexMap, loadFactor, "CNN_Articels.csv", "search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
+        Reader.computeWordFrequencyTable(indexMap, loadFactor, "CNN_Articels.csv", "stop_words_en.txt", hashTableChoice, collisionChoice);
+        return indexMap;
+    }
+
+    static public HashTableInterface<String, HashTableInterface<String, Integer>> findArticleWithSearchEngineForPerformanceMatrix(double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException, InterruptedException{
+        HashTableInterface<String, HashTableInterface<String, Integer>> indexMap;
+        Reader Reader = new Reader();
+        if(hashTableChoice){
+            indexMap = new HashTableSSF<>(collisionChoice, loadFactor); // false -> LP, true -> DH
+        }else{
+            indexMap = new HashTablePAF<>(collisionChoice, loadFactor); // false -> LP, true -> DH
+        }
+        Reader.computeWordFrequencyTable(indexMap, loadFactor, "CNN_Articels.csv","search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice);
         return indexMap;
     }
 }
