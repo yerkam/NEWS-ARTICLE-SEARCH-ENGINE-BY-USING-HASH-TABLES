@@ -86,7 +86,7 @@ public class Reader {
  * @throws IOException 
  * @throws InterruptedException 
  */
-    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // Performans matrixi arama motoru, belli başlı kelimeler için
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // Performans matrixi arama motoru, belli başlı kelimeler için 
                                     double loadFactor,
                                     String loadFileLocation,
                                     String searchWordsFileLocation,
@@ -121,7 +121,6 @@ public class Reader {
             // Artık arama kelimeleri set olarak var, şimdi tüm makaleleri okuyup gerekli kelimeleri ekle
         }
 
-        int wordDone = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
             String line;
             reader.readLine(); // başlığı atla
@@ -148,10 +147,6 @@ public class Reader {
                     if (prev == null) inner.put(articleId, 1); // Yoksa 1 olarak ayarla
                     else inner.put(articleId, prev + 1); // Varsa sayımı artır
                 } // for rawWords
-                wordDone++;
-                if (wordDone % 1000 == 0) { // Her 1000 makalede bir ilerlemeyi yazdır
-                    System.out.println("Articles processed: " + wordDone);
-                }
             }
         }
     }
