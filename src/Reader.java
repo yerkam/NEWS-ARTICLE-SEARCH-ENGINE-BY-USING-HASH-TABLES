@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 public class Reader {
     
-    public static final String DELIMITERS = "[-+=" +
+    private String DELIMITERS = "[-+=" +
                                                     " " + 
                                                     "." +       // space
                                                     "\r\n " +    //carriage return line fit
@@ -52,12 +52,19 @@ public class Reader {
                                                     "※" +          // reference mark
                                                     "]";
     
-    public void loadArticles(String fileLocation, HashTableInterface<String, LinkedList<String>> articleCache) throws IOException {
+/**
+ * Dosya yolu konumunda bulunan makaleleri okuyup verilen articleCache HashTable'ına yükler.
+ * Makalelerin her biri, makale ID'si anahtarıyla ve makale verilerinin bir LinkedList<String> değeriyle saklanır.
+ * @param fileLocation // Makale verilerinin bulunduğu dosyanın yolu
+ * @param articleCache // Makaleleri saklamak için kullanılan HashTable
+ * @throws IOException 
+ */
+    public void loadArticles(String fileLocation, HashTableInterface<String, LinkedList<String>> articleCache) throws IOException { 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileLocation))) {
             String line;
-            reader.readLine(); // Ilk satırı  atla (başlıklar)
+            reader.readLine(); // İlk satırı  atla (başlıklar)
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satiri partlara ayir
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satırı partlara ayır
                 if (parts.length > 0) { // Boş satırları atla
                     String articleId = parts[0].trim(); parts[0] = ""; // ID'yi al ve array'den temizle
                     articleCache.put(articleId, new LinkedList<>(Arrays.asList(parts))); // HashTable'a ekle
@@ -66,20 +73,20 @@ public class Reader {
         }
     }
 
-    /**
-     * This method fills the keys <String, Hash<String, Integer>> of the given hash with the words to be searched. 
-     * Fills the inner hash with <Article's ID, how many times the word found in the key of the outer hash is in the Article text>.
-     * @param indexMap Hash that returns data
-     * @param loadFactor How much of the total data given will be used (0 <= F <= 1)
-     * @param loadFileLocation  Path to the file to search
-     * @param searchWordsFileLocation  Path to the file containing the words to search for
-     * @param stopWordsFileLocation  The path to the file containing the words to skip
-     * @param hashTableChoice A variables required for the hash table.
-     * @param collisionChoice  A variables required for the hash table.
-     * @throws IOException 
-     * @throws InterruptedException 
-     */
-    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // For performance matrix
+/**
+ * Bu yöntem, verilen HashMap<String, Hash<String, Integer>> anahtarlarını aranacak kelimelerle doldurur.
+ * İç HashMap'i <Makalenin ID'si, dış hash anahtarında bulunan kelimenin Makale metninde kaç kez geçtiği> ile doldurur.
+ * @param indexMap Verileri saklamak için kullanılan HashMap
+ * @param loadFactor Verilen yük faktörü, HashMap'in yeniden boyutlandırılması için kullanılır
+ * @param loadFileLocation  Makale verilerinin yükleneceği dosyanın yolu
+ * @param searchWordsFileLocation  Makale metninde aranacak kelimelerin bulunduğu dosyanın yolu
+ * @param stopWordsFileLocation  Makale metninde göz ardı edilecek durdurma kelimelerinin bulunduğu dosyanın yolu
+ * @param hashTableChoice Hangi hash tablosunun kullanılacağını belirten değişken
+ * @param collisionChoice  Hangi collision yöntemini belirten değişken
+ * @throws IOException 
+ * @throws InterruptedException 
+ */
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // Performans matrixi arama motoru, belli başlı kelimeler için
                                     double loadFactor,
                                     String loadFileLocation,
                                     String searchWordsFileLocation,
@@ -104,9 +111,6 @@ public class Reader {
         // Stop wordlari yükle
         loadStopWords(stopWords, stopWordsFileLocation);
 
-       
-
-
         try (BufferedReader reader = new BufferedReader(new FileReader(searchWordsFileLocation))){
             String wordToSearch;
 
@@ -114,7 +118,7 @@ public class Reader {
                 searchWords.put(wordToSearch, false);
             }
 
-            // Artik arama kelimeleri set olarak var, simdi tum article'lari okuyup gerekli kelimeleri ekle
+            // Artık arama kelimeleri set olarak var, şimdi tüm makaleleri okuyup gerekli kelimeleri ekle
         }
 
         int wordDone = 0;
@@ -122,37 +126,37 @@ public class Reader {
             String line;
             reader.readLine(); // başlığı atla
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-                String articleId = parts[0].trim();
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satırı partlara ayır
+                String articleId = parts[0].trim(); // Makale ID'si
 
-                String[] rawWords = parts[10].split(" ");
-                for (String raw : rawWords) {
-                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS);
-                    if (cleaned == null || cleaned.isEmpty()) continue;
-                    if (stopWords.containsKey(cleaned)) continue;
-                    if (!searchWords.containsKey(cleaned)) continue;
+                String[] rawWords = parts[10].split(" "); // Makale metnini kelimelere ayır
+                for (String raw : rawWords) { // Makaledeki her kelime için
+                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS); // Kelimeyi temizle
+                    if (cleaned == null || cleaned.isEmpty()) continue; // Boş kelimeleri atla
+                    if (stopWords.containsKey(cleaned)) continue; // Stop wordleri atla
+                    if (!searchWords.containsKey(cleaned)) continue; // Sadece arama kelimelerini işle (Belli başlı kelimeler için bu satır bulunur, genel arama motoru için bulunmaz)
 
                     // indexMap.get(cleaned) veya oluştur
-                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned);
-                    if (inner == null) {
+                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned); // İç hash tablosunu al
+                    if (inner == null) { // Eğer yoksa yeni oluştur
                         if (hashTableChoice) inner = new HashTableSSF<>(collisionChoice, loadFactor);
                         else inner = new HashTablePAF<>(collisionChoice, loadFactor);
                         indexMap.put(cleaned, inner);
                     }
 
-                    Integer prev = inner.get(articleId);
-                    if (prev == null) inner.put(articleId, 1);
-                    else inner.put(articleId, prev + 1);
+                    Integer prev = inner.get(articleId); // Mevcut sayımı al
+                    if (prev == null) inner.put(articleId, 1); // Yoksa 1 olarak ayarla
+                    else inner.put(articleId, prev + 1); // Varsa sayımı artır
                 } // for rawWords
                 wordDone++;
-                if (wordDone % 1000 == 0) {
+                if (wordDone % 1000 == 0) { // Her 1000 makalede bir ilerlemeyi yazdır
                     System.out.println("Articles processed: " + wordDone);
                 }
             }
         }
     }
 
-    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // General search engine
+    public void computeWordFrequencyTable(HashTableInterface<String, HashTableInterface<String, Integer>> indexMap, // Genel arama motoru
                                     double loadFactor,
                                     String loadFileLocation,
                                     String stopWordsFileLocation,
@@ -173,36 +177,34 @@ public class Reader {
         // Stop wordlari yükle
         loadStopWords(stopWords, stopWordsFileLocation);
 
-       
-
         int wordDone = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(loadFileLocation))) {
             String line;
             reader.readLine(); // başlığı atla
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-                String articleId = parts[0].trim();
+                String[] parts = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"); // Satırı partlara ayır
+                String articleId = parts[0].trim(); // Makale ID'si
 
-                String[] rawWords = parts[10].split(" ");
-                for (String raw : rawWords) {
-                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS);
-                    if (cleaned == null || cleaned.isEmpty()) continue;
-                    if (stopWords.containsKey(cleaned)) continue;
+                String[] rawWords = parts[10].split(" "); // Makale metnini kelimelere ayır
+                for (String raw : rawWords) { // Makaledeki her kelime için
+                    String cleaned = cleanWord(raw.toLowerCase(), DELIMITERS); // Kelimeyi temizle 
+                    if (cleaned == null || cleaned.isEmpty()) continue; // Boş kelimeleri atla
+                    if (stopWords.containsKey(cleaned)) continue; // Stop wordleri atla
 
                     // indexMap.get(cleaned) veya oluştur
-                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned);
-                    if (inner == null) {
+                    HashTableInterface<String, Integer> inner = indexMap.get(cleaned); // İç hash tablosunu al
+                    if (inner == null) { // Eğer yoksa yeni oluştur
                         if (hashTableChoice) inner = new HashTableSSF<>(collisionChoice, loadFactor);
                         else inner = new HashTablePAF<>(collisionChoice, loadFactor);
                         indexMap.put(cleaned, inner);
                     }
 
-                    Integer prev = inner.get(articleId);
-                    if (prev == null) inner.put(articleId, 1);
-                    else inner.put(articleId, prev + 1);
+                    Integer prev = inner.get(articleId); // Mevcut sayımı al
+                    if (prev == null) inner.put(articleId, 1); // Yoksa 1 olarak ayarla
+                    else inner.put(articleId, prev + 1); // Varsa sayımı artır
                 } // for rawWords
                 wordDone++;
-                if (wordDone % 1000 == 0) {
+                if (wordDone % 1000 == 0) { // Her 1000 makalede bir ilerlemeyi yazdır
                     System.out.println("Articles processed: " + wordDone);
                 }
             }
@@ -210,7 +212,7 @@ public class Reader {
     }
 
     private void loadStopWords(HashTableInterface<String, Boolean> temp, String stopWordsFileLocation){
-        // Stop wordlari bir liste kaydet
+        // Stop kelimelerini bir listeye kaydet
         try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
             String stopWord;
             while ((stopWord = reader.readLine()) != null) {

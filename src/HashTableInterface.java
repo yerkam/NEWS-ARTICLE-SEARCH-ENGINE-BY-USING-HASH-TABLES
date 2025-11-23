@@ -14,7 +14,7 @@ public interface HashTableInterface<K, V> {
     V get(K key);
 
     /**
-     * Hash table'ın boyutunu döndürür
+     * Hash table'ın içindeki eleman sayısını döndürür
      * @return tablodaki eleman sayısı
      */
     int size();
@@ -48,12 +48,12 @@ public interface HashTableInterface<K, V> {
     /**
      * Hash fonksiyonu
      * @param key anahtar
-     * @return hash değeri
+     * @return hash değeri (index)
      */
     int hashFunction(K key);
 
     /**
-     * Tabloyu yeniden boyutlandırır
+     * Tabloyu yeniden boyutlandırır, eski tablodaki verileri yeni tabloya yeni indexleriyle kopyalar
      * @return Yeniden boyutlandırılmış tablo
      */
     void resize();
@@ -70,7 +70,7 @@ public interface HashTableInterface<K, V> {
     int getCollisionCount();
 
     /**
-     * @return Tüm key'leri içeren bir set döndürür
+     * @return Tüm key'leri içeren bir LinkedList döndürür
      */
     java.util.LinkedList<K> keySet();
 }
