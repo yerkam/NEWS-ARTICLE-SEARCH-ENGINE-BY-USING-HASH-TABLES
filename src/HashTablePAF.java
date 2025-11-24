@@ -56,9 +56,9 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
 
   @Override
   public void put(K key, V value) {
-    if(size() >= hashSize * loadFactor) resize(); // %70 dolunca resize et
+    if(size() >= hashSize * loadFactor) resize(); 
     int index = hashFunction(key);
-    if (table[index] != null) {
+    if (table[index] != null && !table[index].getKey().equals(key)) {
       collisionCount++;
       if (collision) {
         index = linearProbing(key, index, hashSize, table);

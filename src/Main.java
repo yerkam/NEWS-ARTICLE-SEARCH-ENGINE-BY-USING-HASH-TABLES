@@ -16,7 +16,8 @@ public class Main extends MainFunctionalities {
                 System.out.println("Please enter a number!");
                 continue;
             }
-            if(performansChoice != 0 && performansChoice != 1){ // Geçersiz giriş kontrolü ya 1 ya da 0 olmalı
+            performansChoice = Integer.parseInt(performansInput);
+            if(performansChoice != 0 || performansChoice != 1){ // Geçersiz giriş kontrolü ya 1 ya da 0 olmalı
                 System.out.println("Invalid input, please enter a valid number.");
             }
         }
@@ -49,7 +50,7 @@ public class Main extends MainFunctionalities {
 
         long endTime = System.currentTimeMillis();
         long totalTime = endTime - startTime;
-        System.out.println("The total time of indexing in general search motor: " + totalTime/1000);
+        System.out.println("The total time of indexing in general search motor is " + totalTime/1000 + " seconds.");
         System.out.println();
 
 
