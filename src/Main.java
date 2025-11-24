@@ -5,26 +5,8 @@ import java.util.Scanner;
 
 public class Main extends MainFunctionalities {
     public static void main(String[] args) throws IOException, InterruptedException {
+        
         Scanner scn = new Scanner(System.in);
-
-        // Kullanıcıya performans matrisi gösterilsin mi sor
-        int performansChoice = -1;
-        while (performansChoice != 0 && performansChoice != 1) {
-            System.out.print("Do you want to see the performance matrix? (1 -> Yes, 0 -> No): ");
-            String performansInput = scn.next();
-            // Boş string kontrolü ile birlikte sadece sayısal giriş kabul et
-            if (performansInput.isEmpty() || !performansInput.matches("\\d+")) {
-                System.out.println("Please enter a number!");
-                continue;
-            }
-            performansChoice = Integer.parseInt(performansInput);
-            if (performansChoice != 0 || performansChoice != 1) { // Geçersiz giriş kontrolü ya 1 ya da 0 olmalı
-                System.out.println("Invalid input, please enter a valid number.");
-            }
-        }
-        if (performansChoice == 1)
-            performanceMatrix();
-
         double loadFactor = 0.5;
         boolean hashTableChoice = false; // true -> SSF, false -> PAF
         boolean collisionChoice = true; // true -> DH, false -> LP
@@ -62,6 +44,7 @@ public class Main extends MainFunctionalities {
         while (!input.equals("9")) {
             System.out.println("1 - Enter a sentence or word and find out which article is most relevant.");
             System.out.println("2 - Find Article by Article ID number.");
+            System.out.println("3 - Look for performance matrix."); // Kullanıcıya performans matrisi gösterilsin mi soruluyor
 
             System.out.println("9 - Exit the program.");
             System.out.print("Enter the number of the transaction you want to perform: ");
@@ -217,9 +200,11 @@ public class Main extends MainFunctionalities {
                 } else { // Yoksa uyarı ver
                     System.out.println("The Article ID you entered could not be found.");
                 }
-            } else if (input.equals("9")) {
+            } else if (input.equals("3")) {
+                performanceMatrix(); 
+            }else if (input.equals("9")) {
                 System.out.println("Exiting the program...");
-            } else {
+            }else {
                 System.out.println("An unknown input was entered. Please enter it again.");
             }
             System.out.println();
@@ -277,6 +262,7 @@ public class Main extends MainFunctionalities {
                 } // for collisionChoices
             } // for hashTableChoices
         } // for loadFactors
+        System.out.println();
     }// end performanceMatrix
 
 }// end class
