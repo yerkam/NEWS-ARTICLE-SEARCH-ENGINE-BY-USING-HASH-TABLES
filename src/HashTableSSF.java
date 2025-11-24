@@ -29,7 +29,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         } // Başlangıç pozisyonunda değilse
 
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
@@ -60,7 +60,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
       int index = hashFunction(key);
       if (table[index] != null && !table[index].getKey().equals(key)) { // Collision durumu ile yeni pozisyon ara
         collisionCount++;
-        if(collision) {
+        if(!collision) {
           index = linearProbing(key, index, hashSize, table);
         } else{
           index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
@@ -100,7 +100,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         } // Başlangıç pozisyonunda değilse
         
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
@@ -138,7 +138,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         } // Başlangıç pozisyonunda değilse
         
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
