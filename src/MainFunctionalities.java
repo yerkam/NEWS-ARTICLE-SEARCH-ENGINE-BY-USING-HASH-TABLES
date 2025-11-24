@@ -56,4 +56,17 @@ abstract class MainFunctionalities {
         Reader.computeWordFrequencyTable(indexMap, loadFactor, "CNN_Articels.csv","search.txt", "stop_words_en.txt", hashTableChoice, collisionChoice); // Kelime frekans tablosunu hesapla
         return indexMap;
     }
+
+    static public HashTableInterface<String, Boolean> loadStopWords(String input, double loadFactor, boolean hashTableChoice, boolean collisionChoice) throws IOException{
+        Reader reader = new Reader();
+        HashTableInterface<String, Boolean> stopWordsTable;
+        if(hashTableChoice){
+            stopWordsTable = new HashTableSSF<>(collisionChoice, loadFactor); // true -> DH, false -> LP
+        }else{
+            stopWordsTable = new HashTablePAF<>(collisionChoice, loadFactor); // true -> DH, false -> LP
+        }
+        reader.loadStopWords(stopWordsTable, "stop_words_en.txt"); // Stop kelimelerini yükle
+
+        return stopWordsTable;
+    }
 }
