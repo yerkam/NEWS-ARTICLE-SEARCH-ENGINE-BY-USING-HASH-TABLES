@@ -134,6 +134,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         if (table[hash] != null && table[hash].getKey().equals(key)) {
             V value = table[hash].getValue();
             table[hash] = null;
+            currentSize--;
             return value;
         } // Başlangıç pozisyonunda değilse
         
@@ -145,6 +146,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
                 if (table[hash].getKey().equals(key)) {
                     V value = table[hash].getValue();
                     table[hash] = null;
+                    currentSize--;
                     return value;
                 }
                 hash = (hash + 1) % hashSize;
@@ -159,6 +161,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
                 if (table[hash].getKey().equals(key)) {
                     V value = table[hash].getValue();
                     table[hash] = null;
+                    currentSize--;
                     return value;
                 }
                 hash = (hash + d) % hashSize;
@@ -203,6 +206,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
     public void clear(){
         for (int i = 0; i < hashSize; i++) 
                 table[i] = null;
+        currentSize = 0;
     }
 
     @Override
