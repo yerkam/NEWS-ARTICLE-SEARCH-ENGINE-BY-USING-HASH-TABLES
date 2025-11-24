@@ -25,7 +25,7 @@ public class Main extends MainFunctionalities {
         
         double loadFactor = 0.5;
         boolean hashTableChoice = false; // true -> SSF, false -> PAF
-        boolean collisionChoice = false; // true -> DH, false -> LP
+        boolean collisionChoice = true; // true -> DH, false -> LP
         
         // Zaman hesaplama
         long startTime = System.currentTimeMillis();
@@ -65,22 +65,18 @@ public class Main extends MainFunctionalities {
             
             System.out.println("9 - Exit the program.");
             System.out.print("Enter the number of the transaction you want to perform: ");
-            System.out.println();
             input = scn.next();
-            if(input.isEmpty() || !input.matches("\\d+")) {
-                System.out.println("Please enter a valid number!");
-                continue;
-            }
+            System.out.println();
             input = input.toLowerCase();
             if(input.equals("1")){
                 System.out.print("Write the sentence / word you want to search: "); // Aranacak kelime isteniyor
-                input = scn.next();
+                scn.nextLine(); // consume leftover newline/token from previous next()
+                String wordInput = scn.nextLine().toLowerCase(); // read the full sentence
                 System.out.println();
-                input = input.toLowerCase();
-                input = input.trim(); // Önce baş/son boşlukları temizle
-                input = input.replaceAll("\\s+", " "); // Birden fazla boşluğu tek boşluk yap
-                input = input.replaceAll("[^a-zA-Z0-9\\s]", ""); // Noktalama işaretlerini kaldır (boşlukları koru)
-                String[] words = input.split(" "); // Kelimelere ayır
+                wordInput = wordInput.trim(); // Önce baş/son boşlukları temizle
+                wordInput = wordInput.replaceAll("\\s+", " "); // Birden fazla boşluğu tek boşluk yap
+                wordInput = wordInput.replaceAll("[^a-zA-Z0-9\\s]", ""); // Noktalama işaretlerini kaldır (boşlukları koru)
+                String[] words = wordInput.split(" "); // Kelimelere ayır
                 int size = words.length;
                 for(int i = 0; i < words.length; i++){
                     String word = words[i];

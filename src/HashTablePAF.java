@@ -56,11 +56,7 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
 
   @Override
   public void put(K key, V value) {
-<<<<<<< HEAD
     if(size() >= hashSize * loadFactor) resize(); // load faktörü dolunca resize et
-=======
-    if(size() >= hashSize * loadFactor) resize(); 
->>>>>>> d410929c28a65cd1cff42e5b506b9fae2bb76180
     int index = hashFunction(key);
     if (table[index] != null && !table[index].getKey().equals(key)) {
       collisionCount++;
@@ -230,8 +226,8 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
 
     // Yeni boyutu hesapla (2 katı + asal sayı)
     hashSize = getNextPrime(hashSize * 2);
-
     table = (HashEntry<K, V>[]) new HashEntry[hashSize];
+    currentSize = 0;
 
     // Eski elementleri yeni tabloya ekle (rehashing)
     for (int i = 0; i < oldCapacity; i++) {
@@ -246,6 +242,8 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
   public void clear(){
       for (int i = 0; i < hashSize; i++) 
               table[i] = null;
+
+      currentSize = 0;
   }
 
   private int getNextPrime(int n) {
