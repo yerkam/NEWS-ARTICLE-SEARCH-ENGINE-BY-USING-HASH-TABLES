@@ -224,66 +224,7 @@ public class Reader {
         }
     }
 
-    private String cleanrecursive(String word, String delimiter) {
-        // Base case: word boşsa veya delimiter boşsa
-        if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
-            return word;
-        }
-
-        boolean foundAndRemoved = false;
-        String newWord = word;
-
-        // Delimiter'daki her karakteri kontrol et
-        for (char delimChar : delimiter.toCharArray()) {
-            int index = newWord.indexOf(delimChar);
-            if (index != -1) {
-                // İlk bulduğun karakteri sil
-                newWord = newWord.substring(0, index) + newWord.substring(index + 1);
-                foundAndRemoved = true;
-                break; // Bir karakter sildik, recursive çağrı yapacağız
-            }
-        }
-
-        // Eğer hiçbir karakter silinmediyse, döngüden çık
-        if (!foundAndRemoved) {
-            return newWord;
-        }
-
-        // Recursive olarak devam et
-        return cleanWord(newWord, delimiter);
-    }
-
-    private String cleanrecursivestringbuilder(String word, String delimiter) {
-        // Base case: word boşsa veya delimiter boşsa
-        if (word == null || word.isEmpty() || delimiter == null || delimiter.isEmpty()) {
-            return word;
-        }
-
-        boolean foundAndRemoved = false;
-        StringBuilder currentWord = new StringBuilder(word);
-
-        // Delimiter'daki her karakteri kontrol et
-        for (char delimChar : delimiter.toCharArray()) {
-            for (int i = 0; i < currentWord.length(); i++) {
-                if (currentWord.charAt(i) == delimChar) {
-                    // İlk bulduğun karakteri sil
-                    currentWord.deleteCharAt(i);
-                    foundAndRemoved = true;
-                    break; // Bir karakter sildik, recursive çağrı yapacağız
-                }
-            }
-            if (foundAndRemoved)
-                break;
-        }
-
-        // Eğer hiçbir karakter silinmediyse, döngüden çık
-        if (!foundAndRemoved) {
-            return currentWord.toString();
-        }
-
-        // Recursive olarak devam et
-        return cleanWord(currentWord.toString(), delimiter);
-    }
+   
 
     private String cleanWord(String word, String delimiter) {
         // 1. Basit Durum Kontrolleri
@@ -316,10 +257,7 @@ public class Reader {
         return result.substring(start, end + 1);
     }
 
-    private String cleanWordregex(String word, String delimiter) {
-
-        return word.replaceAll(delimiter, "");
-    }
+    
     /*
      * Performans Karşılaştırması
      * YaklaşımZamanAlanStack RiskMevcut (Recursive)O(n²×m)O(n×d)✗ VarStringBuilder

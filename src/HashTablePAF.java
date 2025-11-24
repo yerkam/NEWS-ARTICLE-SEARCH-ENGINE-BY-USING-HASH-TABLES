@@ -2,12 +2,12 @@ import java.util.LinkedList;
 
 public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInterface<K, V> {
   private int hashSize = 1009; // Asal sayı boyutu
-  private static final int Z = 33;
-  private boolean collision;
-  private HashEntry<K, V>[] table;
-  private int collisionCount = 0;
-  private double loadFactor;
-  private int currentSize = 0;
+  private static final int Z = 33; // PAF için polinom katsayısı çarpan
+  private boolean collision; // collision handling yöntemi
+  private HashEntry<K, V>[] table; // Hash tablosu
+  private int collisionCount = 0; // çarpışma sayacı
+  private double loadFactor; // yük faktörü
+  private int currentSize = 0; // mevcut eleman sayısı
 
   @SuppressWarnings("unchecked")
   public HashTablePAF(boolean collisionChoice, double loadFactor) {
@@ -18,10 +18,10 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
     this.loadFactor = loadFactor; 
   }
 
-  @Override
+  @Override  
   public V get(K key) {
       int hash = hashFunction(key);
-      int startIndex = hash;
+      int startIndex = hash; // başangıç indeksini sakla
       
       // İlk pozisyonu kontrol et
       if (table[hash] != null && table[hash].getKey().equals(key)) {
@@ -41,8 +41,8 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
       } else {
           // Double Hashing
           int q = getPreviousPrime(hashSize);
-          int d = q - (startIndex % q);
-          hash = (startIndex + d) % hashSize;
+          int d = q - (startIndex % q); // İkincil hash fonksiyonu
+          hash = (startIndex + d) % hashSize; // adım adım ilerle
           
           while (hash != startIndex && table[hash] != null) {
               if (table[hash].getKey().equals(key)) {
@@ -56,11 +56,11 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
 
   @Override
   public void put(K key, V value) {
-    if(size() >= hashSize * loadFactor) resize(); // %70 dolunca resize et
+    if(size() >= hashSize * loadFactor) resize(); // load faktörü dolunca resize et
     int index = hashFunction(key);
     if (table[index] != null) {
       collisionCount++;
-      if (collision) {
+      if (collision) { // Linear Probing veya Double Hashing ile yeni pozisyon ara
         index = linearProbing(key, index, hashSize, table);
       } else {
         index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
@@ -90,7 +90,7 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
   }
 
   @Override
-  public boolean containsKey(K key) {
+  public boolean containsKey(K key) { 
       int hash = hashFunction(key);
       int startIndex = hash;
       
@@ -259,7 +259,7 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
     return n;
   }
 
-  private boolean isPrime(int n) {
+  private boolean isPrime(int n) {// Asal sayı kontrolü (6k±1 optimizasyonu)
     if (n <= 1)
       return false;
     if (n <= 3)
@@ -281,7 +281,7 @@ public class HashTablePAF<K, V> extends Collision<K, V> implements HashTableInte
 
   @Override
     public LinkedList<K> keySet() {
-        LinkedList<K> keys = new LinkedList<K>();
+        LinkedList<K> keys = new LinkedList<K>();// Tablodaki tüm key'leri topla
         for (HashEntry<K, V> entry : table) {
             if (entry != null) {
                 keys.push(entry.getKey());
