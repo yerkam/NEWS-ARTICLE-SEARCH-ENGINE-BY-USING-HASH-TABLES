@@ -206,7 +206,7 @@ public class Reader {
         }
     }
 
-    private void loadStopWords(HashTableInterface<String, Boolean> temp, String stopWordsFileLocation){
+    public void loadStopWords(HashTableInterface<String, Boolean> temp, String stopWordsFileLocation){
         // Stop kelimelerini bir listeye kaydet
         try (BufferedReader reader = new BufferedReader(new FileReader(stopWordsFileLocation))) {
             String stopWord;
