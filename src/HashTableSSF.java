@@ -29,7 +29,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         } // Başlangıç pozisyonunda değilse
 
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
@@ -60,7 +60,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
       int index = hashFunction(key);
       if (table[index] != null && !table[index].getKey().equals(key)) { // Collision durumu ile yeni pozisyon ara
         collisionCount++;
-        if(collision) {
+        if(!collision) {
           index = linearProbing(key, index, hashSize, table);
         } else{
           index = doubleHashing(key, index, hashSize, table, getPreviousPrime(hashSize));
@@ -100,7 +100,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         } // Başlangıç pozisyonunda değilse
         
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
@@ -134,17 +134,19 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
         if (table[hash] != null && table[hash].getKey().equals(key)) {
             V value = table[hash].getValue();
             table[hash] = null;
+            currentSize--;
             return value;
         } // Başlangıç pozisyonunda değilse
         
         // Collision varsa probing ile ara
-        if (collision) {
+        if (!collision) {
             // Linear Probing ile ara
             hash = (hash + 1) % hashSize;
             while (hash != startIndex && table[hash] != null) {
                 if (table[hash].getKey().equals(key)) {
                     V value = table[hash].getValue();
                     table[hash] = null;
+                    currentSize--;
                     return value;
                 }
                 hash = (hash + 1) % hashSize;
@@ -159,6 +161,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
                 if (table[hash].getKey().equals(key)) {
                     V value = table[hash].getValue();
                     table[hash] = null;
+                    currentSize--;
                     return value;
                 }
                 hash = (hash + d) % hashSize;
@@ -203,6 +206,7 @@ public class HashTableSSF<K, V> extends Collision<K, V> implements HashTableInte
     public void clear(){
         for (int i = 0; i < hashSize; i++) 
                 table[i] = null;
+        currentSize = 0;
     }
 
     @Override
